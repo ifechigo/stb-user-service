@@ -2,7 +2,9 @@ package com.suntrustbank.user.core.errorhandling;
 
 import com.suntrustbank.user.core.dtos.BaseErrorResponse;
 import com.suntrustbank.user.core.enums.ErrorCode;
+import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
+import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -52,6 +54,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(e.getStatusCode())
             .contentType(MediaType.APPLICATION_JSON)
             .body(e.getResponseBodyAsString());
+    }
+
+    @ExceptionHandler(AuthWebClientException.class)
+    public ResponseEntity<AuthResponseDto.Error> handleAuthWebClientException(AuthWebClientException ex) {
+        log.error(EXCEPTION_WAS_THROWN, ex );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ex.getError());
     }
 
     @Override

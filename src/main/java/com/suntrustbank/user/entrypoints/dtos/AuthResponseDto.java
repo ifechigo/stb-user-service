@@ -17,7 +17,7 @@ public class AuthResponseDto {
     public static class Error {
         private String status;
         private List<String> messages;
-        private String message;
+        private List<String> errors;
     }
 
     @Getter

@@ -6,6 +6,7 @@ import com.suntrustbank.user.core.configs.webclient.WebClientService;
 import com.suntrustbank.user.core.dtos.BaseResponse;
 import com.suntrustbank.user.core.enums.BaseResponseMessage;
 import com.suntrustbank.user.core.enums.ErrorCode;
+import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.RandomNumberGenerator;
 import com.suntrustbank.user.entrypoints.dtos.*;
@@ -106,8 +107,16 @@ public class UserServiceImpl implements UserService {
         organization.setCreator(user);
         organizationRepository.save(organization);
 
-        webClientService.request(AuthRequestDto.builder().organizationId(organizationId).phoneNumber(requestDto.getPhoneNumber())
+        AuthResponseDto authResponseDto = webClientService.request(AuthRequestDto.builder().organizationId(organizationId).phoneNumber(requestDto.getPhoneNumber())
             .pin(requestDto.getPin()).build());
+        if (!authResponseDto.getStatus().equals("SUCCESS")) {
+            throw new GenericErrorCodeException(
+                    authResponseDto.getMessage(),
+                    ErrorCode.BAD_REQUEST,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
 
         onboardingRepository.updateStatusById(requestDto.getReference(), OnboardingStatus.PHONE_VERIFIED);
 

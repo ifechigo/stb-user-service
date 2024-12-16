@@ -35,28 +35,10 @@ public class AuthWebClientService extends AbstractWebClientService<AuthRequestDt
             doOnError(exception -> log.error("Error occurred while creating user on the Auth service", exception)).
             onErrorResume(WebClientResponseException.class, this::toError).
             block();
-
     }
 
     private Mono<AuthResponseDto> toError(WebClientResponseException exception) {
-
-        System.out.println("================================================================");
-        System.out.println("================================================================");
-
-        System.out.println(exception.getMessage());
-        System.out.println(exception.getResponseBodyAsString());
-
-        System.out.println("================================================================");
-
         AuthResponseDto.Error error = exception.getResponseBodyAs(AuthResponseDto.Error.class);
-
-        System.out.println(error.getMessages());
-        System.out.println(error.getStatus());
-
-        System.out.println("================================================================");
-        System.out.println("================================================================");
-
-
         throw new AuthWebClientException(error);
     }
 

@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public BaseResponse validatePhoneNumberAndNotify(String phoneNumber) throws GenericErrorCodeException {
         if (!phoneNumber.matches("\\d{11}")) {
             throw new GenericErrorCodeException("not a valid phone number", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);

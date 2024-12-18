@@ -4,9 +4,9 @@ import com.suntrustbank.user.core.configs.cache.CacheService;
 import com.suntrustbank.user.core.configs.properties.OtpDevConfig;
 import com.suntrustbank.user.core.configs.webclient.WebClientService;
 import com.suntrustbank.user.core.dtos.BaseResponse;
+import com.suntrustbank.user.core.dtos.SmsRequest;
 import com.suntrustbank.user.core.enums.BaseResponseMessage;
 import com.suntrustbank.user.core.enums.ErrorCode;
-import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.RandomNumberGenerator;
 import com.suntrustbank.user.entrypoints.dtos.*;
@@ -18,6 +18,7 @@ import com.suntrustbank.user.entrypoints.repository.models.Onboarding;
 import com.suntrustbank.user.entrypoints.repository.models.Organization;
 import com.suntrustbank.user.entrypoints.repository.models.User;
 import com.suntrustbank.user.entrypoints.services.UserService;
+import com.suntrustbank.user.services.NotificationService;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final WebClientService<AuthRequestDto, AuthResponseDto> webClientService;
-    private final WebClientService<String, AuthResponseDto> notificationService;
+    private final NotificationService notificationService;
 
     private final CacheService cacheService;
     private final UserRepository userRepository;
@@ -79,12 +80,11 @@ public class UserServiceImpl implements UserService {
         String code;
         if (environment.acceptsProfiles(PRODUCTION, STAGING)) {
             code = RandomNumberGenerator.generate(6);
-            notificationService.request(code);
         } else {
             code = otpDevConfig.getPhoneOtp();
         }
         cacheService.acquireLock(onboarding.getId(), code, LOCK_CHECK_TTL);
-
+        notificationService.sendSMS(SmsRequest.builder().build());
         return BaseResponse.success(OnboardingResponseDto.builder().reference(onboarding.getId()).build(), BaseResponseMessage.SUCCESSFUL);
     }
 
@@ -116,7 +116,6 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_REQUEST
             );
         }
-
 
         onboardingRepository.updateStatusById(requestDto.getReference(), OnboardingStatus.PHONE_VERIFIED);
 

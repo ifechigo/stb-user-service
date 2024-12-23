@@ -83,10 +83,13 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='onboardings' AND xtype='U')
 BEGIN
     CREATE TABLE onboardings (
         id NVARCHAR(50) PRIMARY KEY,
+        country_code NVARCHAR(3) NOT NULL,
         phone_number NVARCHAR(11) NOT NULL UNIQUE ,
         status NVARCHAR(50) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
+
+        CONSTRAINT idx_onboardings_country_code_phone_number UNIQUE(country_code, phone_number)
     );
 END;
 

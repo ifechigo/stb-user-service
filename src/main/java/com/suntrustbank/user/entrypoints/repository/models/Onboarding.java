@@ -22,7 +22,10 @@ public class Onboarding {
     @Id
     private String id;
 
-    @Column(unique = true, updatable = false)
+    @Column(nullable = false, updatable = false)
+    private String countryCode;
+
+    @Column(nullable = false, updatable = false)
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)

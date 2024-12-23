@@ -3,6 +3,7 @@ package com.suntrustbank.user.entrypoints;
 import com.suntrustbank.user.core.dtos.BaseResponse;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.jwt.JwtUtil;
+import com.suntrustbank.user.entrypoints.dtos.SIgnUpRequest;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.entrypoints.dtos.BusinessUpdateRequest;
 import com.suntrustbank.user.entrypoints.dtos.UserRequestDto;
@@ -16,14 +17,15 @@ import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/v1/user")
 public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtService;
 
-    @GetMapping("/validate/{phoneNumber}")
-    public BaseResponse validatePhone(@PathVariable String phoneNumber) throws GenericErrorCodeException {
-        return userService.validatePhoneNumberAndNotify(phoneNumber);
+    @PostMapping("/signup")
+    public BaseResponse validatePhone(@RequestBody SIgnUpRequest phoneNumber) throws GenericErrorCodeException {
+        return userService.signUp(phoneNumber);
     }
 
     @PostMapping("/create")

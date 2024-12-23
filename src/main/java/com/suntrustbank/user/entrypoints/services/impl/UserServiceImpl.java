@@ -9,6 +9,7 @@ import com.suntrustbank.user.core.enums.BaseResponseMessage;
 import com.suntrustbank.user.core.enums.ErrorCode;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.RandomNumberGenerator;
+import com.suntrustbank.user.core.utils.UUIDGenerator;
 import com.suntrustbank.user.entrypoints.dtos.*;
 import com.suntrustbank.user.entrypoints.repository.*;
 import com.suntrustbank.user.entrypoints.repository.enums.OnboardingStatus;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 
 @Slf4j
@@ -54,28 +54,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public BaseResponse validatePhoneNumberAndNotify(String phoneNumber) throws GenericErrorCodeException {
-        if (!phoneNumber.matches("\\d{11}")) {
-            throw new GenericErrorCodeException("not a valid phone number", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
-        }
+    public BaseResponse signUp(SIgnUpRequest request) throws GenericErrorCodeException {
 
         Onboarding onboarding = new Onboarding();
 
-        Optional<Onboarding> existingRecord = onboardingRepository.findByPhoneNumber(phoneNumber);
-        if (existingRecord.isPresent()) {
-            if (existingRecord.get().getStatus().equals(OnboardingStatus.PHONE_VERIFIED)) {
+        Optional<Onboarding> existingRecord = onboardingRepository.findByPhoneNumber(request.getPhoneNumber());
+        if (existingRecord.isEmpty()) {
+            onboarding.setId(UUIDGenerator.generate());
+            onboarding.setStatus(OnboardingStatus.AWAITING_PHONE_OTP);
+            onboarding.setCountryCode(request.getCountryCode());
+            onboarding.setPhoneNumber(request.getPhoneNumber());
+            onboardingRepository.save(onboarding);
+        } else {
+            if (existingRecord.get().getStatus().equals(OnboardingStatus.AWAITING_PHONE_OTP)) {
+                onboarding = existingRecord.get();
+            } else {
                 throw new GenericErrorCodeException("phone number already exists", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
             }
-            onboarding = existingRecord.get();
-        } else {
-            onboarding.setId(UUID.randomUUID().toString());
-            onboarding.setStatus(OnboardingStatus.AWAITING_PHONE_OTP);
-            onboarding.setPhoneNumber(phoneNumber);
-            onboardingRepository.save(onboarding);
         }
 
         String code;
-        if (environment.acceptsProfiles(PRODUCTION, STAGING)) {
+        if (!environment.acceptsProfiles("dev")) {
             code = RandomNumberGenerator.generate(6);
         } else {
             code = otpDevConfig.getPhoneOtp();
@@ -93,14 +92,14 @@ public class UserServiceImpl implements UserService {
             throw new GenericErrorCodeException("invalid otp", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
-        String userId = UUID.randomUUID().toString();
+        String userId = UUIDGenerator.generate();
         User user = new User();
         user.setId(userId);
         user.setPhoneNumber(onboardingRepository.findById(requestDto.getReference()).get().getPhoneNumber());
         user.setRole(Role.OWNER);
         userRepository.save(user);
         Organization organization = new Organization();
-        organization.setId(UUID.randomUUID().toString());
+        organization.setId(UUIDGenerator.generate());
         organization.setCreator(user);
         organizationRepository.save(organization);
 
@@ -145,14 +144,14 @@ public class UserServiceImpl implements UserService {
         }
 
         Business business = new Business();
-        business.setId(UUID.randomUUID().toString());
+        business.setId(UUIDGenerator.generate());
         business.setOrganization(organization);
         business.setAddress(requestDto.getBusinessAddress());
         business.setBusinessType(requestDto.getBusinessType());
         businessRepository.save(business);
 
         CashPoint cashPoint = new CashPoint();
-        cashPoint.setId(UUID.randomUUID().toString());
+        cashPoint.setId(UUIDGenerator.generate());
         cashPoint.setBusiness(business);
         cashPoint.setMain(true);
         cashPoint.setActive(true);

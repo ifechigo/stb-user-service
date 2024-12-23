@@ -10,6 +10,6 @@ public interface UserService {
     BaseResponse validatePhoneNumberAndNotify(String email) throws GenericErrorCodeException;
     BaseResponse createUser(UserRequestDto requestDto) throws GenericErrorCodeException;
     BaseResponse createBusinessProfile(BusinessUpdateRequest requestDto) throws GenericErrorCodeException;
-    BaseResponse getBusiness(String organizationId) throws GenericErrorCodeException;
+    BaseResponse getBusiness(String userId) throws GenericErrorCodeException;
 
 }

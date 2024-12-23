@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 
 public class RandomNumberGenerator {
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String ALPHANUMERIC_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     /**
      * Generates a random numeric code with the specified number of digits.
@@ -25,5 +26,26 @@ public class RandomNumberGenerator {
         int randomNumber = RANDOM.nextInt(upperBound - lowerBound + 1) + lowerBound;
 
         return String.valueOf(randomNumber);
+    }
+
+    /**
+     * Generates a random alphanumeric string with the specified length.
+     *
+     * @param length The length of the alphanumeric string.
+     * @return A random alphanumeric string.
+     * @throws IllegalArgumentException if the length is less than 1.
+     */
+    public static String generateAlphanumericCode(int length) {
+        if (length < 1) {
+            throw new IllegalArgumentException("Length must be at least 1");
+        }
+
+        StringBuilder result = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(ALPHANUMERIC_CHARACTERS.length());
+            result.append(ALPHANUMERIC_CHARACTERS.charAt(index));
+        }
+
+        return result.toString();
     }
 }

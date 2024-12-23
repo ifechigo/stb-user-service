@@ -38,4 +38,8 @@ public class GenericErrorCodeException extends RuntimeException {
         return new GenericErrorCodeException(ErrorCode.INTERNAL_SERVER_ERROR.getDescription(),
             ErrorCode.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    public static GenericErrorCodeException unAuthorizedToken() {
+        return new GenericErrorCodeException(ErrorCode.UN_AUTHENTICATED_TOKEN);
+    }
 }

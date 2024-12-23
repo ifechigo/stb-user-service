@@ -13,10 +13,7 @@ import com.suntrustbank.user.entrypoints.dtos.*;
 import com.suntrustbank.user.entrypoints.repository.*;
 import com.suntrustbank.user.entrypoints.repository.enums.OnboardingStatus;
 import com.suntrustbank.user.entrypoints.repository.enums.Role;
-import com.suntrustbank.user.entrypoints.repository.models.Business;
-import com.suntrustbank.user.entrypoints.repository.models.Onboarding;
-import com.suntrustbank.user.entrypoints.repository.models.Organization;
-import com.suntrustbank.user.entrypoints.repository.models.User;
+import com.suntrustbank.user.entrypoints.repository.models.*;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.services.NotificationService;
 import io.micrometer.common.util.StringUtils;
@@ -42,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final CacheService cacheService;
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
+    private final CashPointRepository cashPointRepository;
     private final OnboardingRepository onboardingRepository;
     private final OrganizationRepository organizationRepository;
 
@@ -52,7 +50,6 @@ public class UserServiceImpl implements UserService {
     private static final int LOCK_CHECK_TTL = 3;
     public static final String PRODUCTION = "prod";
     public static final String STAGING = "staging";
-    public static final int ONE_RECORD_UPDATED = 1;
 
 
     @Override
@@ -96,18 +93,18 @@ public class UserServiceImpl implements UserService {
             throw new GenericErrorCodeException("invalid otp", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
+        String userId = UUID.randomUUID().toString();
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
-        user.setPhoneNumber(requestDto.getPhoneNumber());
+        user.setId(userId);
+        user.setPhoneNumber(onboardingRepository.findById(requestDto.getReference()).get().getPhoneNumber());
         user.setRole(Role.OWNER);
         userRepository.save(user);
-        String organizationId = UUID.randomUUID().toString();
         Organization organization = new Organization();
-        organization.setId(organizationId);
+        organization.setId(UUID.randomUUID().toString());
         organization.setCreator(user);
         organizationRepository.save(organization);
 
-        AuthResponseDto authResponseDto = webClientService.request(AuthRequestDto.builder().organizationId(organizationId).phoneNumber(requestDto.getPhoneNumber())
+        AuthResponseDto authResponseDto = webClientService.request(AuthRequestDto.builder().userId(userId).phoneNumber(user.getPhoneNumber())
             .pin(requestDto.getPin()).build());
         if (!authResponseDto.getStatus().equals("SUCCESS")) {
             throw new GenericErrorCodeException(
@@ -125,46 +122,57 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public BaseResponse createBusinessProfile(BusinessUpdateRequest requestDto) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findById(requestDto.getOrganizationId())
+        Organization organization = organizationRepository.findByCreatorId(requestDto.getUserId())
             .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
 
-        if (StringUtils.isNotBlank(requestDto.getEmail()) && organizationRepository.isEmailTaken(requestDto.getEmail())) {
-            throw new GenericErrorCodeException("Email is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
-        }
-        if (StringUtils.isNotBlank(requestDto.getAlternativePhoneNumber()) && organizationRepository.isPhoneNumberTaken(requestDto.getAlternativePhoneNumber())) {
-            throw new GenericErrorCodeException("Phone Number is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
-        }
+        if (organization.getBusinesses().isEmpty()) {
 
-        User user = organization.getCreator();
-        user.setFullName(requestDto.getFullName());
-        user.setEmail(requestDto.getEmail());
-        user.setState(requestDto.getState());
-        user.setLga(requestDto.getLga());
-        user.setAltPhoneNumber(requestDto.getAlternativePhoneNumber());
-        user.setPhoto(requestDto.getPhotoBase64());
-        userRepository.save(user);
+            if (StringUtils.isNotBlank(requestDto.getEmail()) && organizationRepository.isEmailTaken(requestDto.getEmail())) {
+                throw new GenericErrorCodeException("Email is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
+            }
+            if (StringUtils.isNotBlank(requestDto.getAlternativePhoneNumber()) && organizationRepository.isPhoneNumberTaken(requestDto.getAlternativePhoneNumber())) {
+                throw new GenericErrorCodeException("Phone Number is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
+            }
+
+            User user = organization.getCreator();
+            user.setFullName(requestDto.getFullName());
+            user.setEmail(requestDto.getEmail());
+            user.setState(requestDto.getState());
+            user.setLga(requestDto.getLga());
+            user.setAltPhoneNumber(requestDto.getAlternativePhoneNumber());
+            user.setPhoto(requestDto.getPhotoBase64());
+            userRepository.save(user);
+        }
 
         Business business = new Business();
         business.setId(UUID.randomUUID().toString());
         business.setOrganization(organization);
         business.setAddress(requestDto.getBusinessAddress());
         business.setBusinessType(requestDto.getBusinessType());
-//        business.setEmail(requestDto.getEmail());
-//        business.setState(requestDto.getState());
-//        business.setLga(requestDto.getState());
         businessRepository.save(business);
+
+        CashPoint cashPoint = new CashPoint();
+        cashPoint.setId(UUID.randomUUID().toString());
+        cashPoint.setBusiness(business);
+        cashPoint.setMain(true);
+        cashPoint.setActive(true);
+
+        String reference;
+        do {
+            reference = RandomNumberGenerator.generateAlphanumericCode(12);
+        } while (cashPointRepository.findByReference(reference).isPresent());
+        cashPoint.setReference(reference);
+        cashPointRepository.save(cashPoint);
 
         organization.addBusiness(business);
         organizationRepository.save(organization);
-
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
     }
 
     @Override
-    public BaseResponse getBusiness(String organizationId) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findById(organizationId)
-                .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
-
+    public BaseResponse getBusiness(String userId) throws GenericErrorCodeException {
+        Organization organization = organizationRepository.findByCreatorId(userId)
+            .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
     }
 }

@@ -1,19 +1,19 @@
 package com.suntrustbank.user.entrypoints.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.suntrustbank.user.entrypoints.dtos.enums.BusinessType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-
-import static com.suntrustbank.user.entrypoints.dtos.Constants.PHONE_NUMBER_LENGTH;
 
 @Getter
 @Setter
 public class BusinessUpdateRequest {
-    private String organizationId;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String userId;
+
     private String fullName;
 
     @Email(message = "not a valid email type")

@@ -2,14 +2,16 @@ package com.suntrustbank.user.entrypoints;
 
 import com.suntrustbank.user.core.dtos.BaseResponse;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
+import com.suntrustbank.user.core.utils.jwt.JwtUtil;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.entrypoints.dtos.BusinessUpdateRequest;
 import com.suntrustbank.user.entrypoints.dtos.UserRequestDto;
-import com.suntrustbank.user.entrypoints.dtos.UserUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
 
 @Slf4j
 @RestController
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtService;
 
     @GetMapping("/validate/{phoneNumber}")
     public BaseResponse validatePhone(@PathVariable String phoneNumber) throws GenericErrorCodeException {
@@ -29,12 +32,15 @@ public class UserController {
     }
 
     @PostMapping("/business")
-    public BaseResponse createBusiness(@RequestBody BusinessUpdateRequest requestDto, String organizationId) throws  GenericErrorCodeException {
+    public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessUpdateRequest requestDto) throws  GenericErrorCodeException {
+        var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        requestDto.setUserId(userId);
         return userService.createBusinessProfile(requestDto);
     }
 
-    @GetMapping("/business/{organizationId}")
-    public BaseResponse getUserBusiness(@PathVariable String organizationId) throws  GenericErrorCodeException {
-        return userService.getBusiness(organizationId);
+    @GetMapping("/business")
+    public BaseResponse getUserBusiness(@RequestHeader("Authorization") String authorizationHeader) throws  GenericErrorCodeException {
+        var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        return userService.getBusiness(userId);
     }
 }

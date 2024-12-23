@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AuthRequestDto {
-    private String organizationId;
+    private String userId;
     private String phoneNumber;
     private String pin;
 }

@@ -18,9 +18,9 @@ public class UserRequestDto {
     @NotBlank(message = "otp cannot be empty")
     private String otp;
 
-    @NotBlank(message = "phone number cannot be empty")
-    @Pattern(regexp = "\\d{11}", message = "phoneNumber field must be exactly 11 digits")
-    private String phoneNumber;
+//    @NotBlank(message = "phone number cannot be empty")
+//    @Pattern(regexp = "\\d{11}", message = "phoneNumber field must be exactly 11 digits")
+//    private String phoneNumber;
 
     @NotBlank(message = "pin cannot be empty")
     @Size(min = PIN_LENGTH, message = "pin must be 4 digits long")

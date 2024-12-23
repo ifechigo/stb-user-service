@@ -40,11 +40,11 @@ BEGIN
         id NVARCHAR(50) PRIMARY KEY,
         organization_id NVARCHAR(50) NOT NULL,
         name NVARCHAR(255) NULL,
-        email NVARCHAR(255) UNIQUE,
+        email NVARCHAR(255) NULL,
         address NVARCHAR(255) NULL,
         state NVARCHAR(255) NULL,
         lga NVARCHAR(255) NULL,
-        phone_number NVARCHAR(20) NULL UNIQUE,
+        phone_number NVARCHAR(20) NULL,
         business_type NVARCHAR(50) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE(),
@@ -53,6 +53,29 @@ BEGIN
     CREATE INDEX idx_businesses_email ON businesses (email);
     CREATE INDEX idx_businesses_phone_number ON businesses (phone_number);
     CREATE INDEX idx_businesses_organization_id ON businesses (organization_id);
+END;
+
+-- CASHPOINT Table
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='cash_points' AND xtype='U')
+BEGIN
+    CREATE TABLE cash_points (
+        id NVARCHAR(50) PRIMARY KEY,
+        reference NVARCHAR(20) NOT NULL UNIQUE,
+        business_id NVARCHAR(50) NOT NULL,
+        virtual_account_no NVARCHAR(15) NULL,
+        wallet_id NVARCHAR(15) NULL,
+        active BIT NOT NULL,
+        is_main BIT NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT GETDATE(),
+        updated_at DATETIME DEFAULT GETDATE(),
+        FOREIGN KEY (business_id) REFERENCES businesses (id)
+    );
+    CREATE INDEX idx_cash_points_reference ON cash_points (reference);
+    CREATE INDEX idx_cash_points_business_id ON cash_points (business_id);
+    CREATE INDEX idx_cash_points_virtual_account_no ON cash_points (virtual_account_no);
+    CREATE INDEX idx_cash_points_wallet_id ON cash_points (wallet_id);
+    CREATE INDEX idx_cash_points_active ON cash_points (active);
+    CREATE INDEX idx_cash_points_is_main ON cash_points (is_main);
 END;
 
 -- ONBOARDINGS Table

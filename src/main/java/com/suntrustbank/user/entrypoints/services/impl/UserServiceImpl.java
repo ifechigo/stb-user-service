@@ -14,10 +14,13 @@ import com.suntrustbank.user.entrypoints.dtos.*;
 import com.suntrustbank.user.entrypoints.repository.*;
 import com.suntrustbank.user.entrypoints.repository.enums.OnboardingStatus;
 import com.suntrustbank.user.entrypoints.repository.enums.Role;
+import com.suntrustbank.user.entrypoints.repository.enums.Status;
 import com.suntrustbank.user.entrypoints.repository.models.*;
+import com.suntrustbank.user.entrypoints.services.CashPointService;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.services.NotificationService;
 import io.micrometer.common.util.StringUtils;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -35,21 +38,18 @@ public class UserServiceImpl implements UserService {
 
     private final WebClientService<AuthRequestDto, AuthResponseDto> webClientService;
     private final NotificationService notificationService;
+    private final CashPointService cashPointService;
 
     private final CacheService cacheService;
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
-    private final CashPointRepository cashPointRepository;
     private final OnboardingRepository onboardingRepository;
     private final OrganizationRepository organizationRepository;
 
     private final Environment environment;
     private final OtpDevConfig otpDevConfig;
 
-
     private static final int LOCK_CHECK_TTL = 3;
-    public static final String PRODUCTION = "prod";
-    public static final String STAGING = "staging";
 
 
     @Override
@@ -119,53 +119,108 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public BaseResponse updateUser(UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
+
+        Optional<User> existingUser = userRepository.findById(requestDto.getUserId());
+        if (existingUser.isEmpty()) {
+            throw GenericErrorCodeException.notFound("user does not exist");
+        }
+        User userDetails = existingUser.get();
+
+        if (StringUtils.isNotBlank(requestDto.getFirstName())) {
+            userDetails.setFirstName(requestDto.getFirstName());
+        }
+        if (StringUtils.isNotBlank(requestDto.getLastName())) {
+            userDetails.setLastName(requestDto.getLastName());
+        }
+        if (StringUtils.isNotBlank(requestDto.getEmail())) {
+            userDetails.setEmail(requestDto.getEmail());
+        }
+        if (StringUtils.isNotBlank(requestDto.getAddress())) {
+            userDetails.setAddress(requestDto.getAddress());
+        }
+        if (StringUtils.isNotBlank(requestDto.getState())) {
+            userDetails.setState(requestDto.getState());
+        }
+        if (StringUtils.isNotBlank(requestDto.getLga())) {
+            userDetails.setLga(requestDto.getLga());
+        }
+        if (StringUtils.isNotBlank(requestDto.getAltPhoneNumber())) {
+            userDetails.setAltPhoneNumber(requestDto.getAltPhoneNumber());
+        }
+        if (StringUtils.isNotBlank(requestDto.getDob())) {
+            userDetails.setDob(requestDto.getDob());
+        }
+        if (StringUtils.isNotBlank(requestDto.getProfilePhoto())) {
+            userDetails.setProfilePhoto(requestDto.getProfilePhoto());
+        }
+
+        userRepository.save(userDetails);
+
+        return BaseResponse.success("UPDATED", BaseResponseMessage.SUCCESSFUL);
+    }
+
+    @Override
     @Transactional
-    public BaseResponse createBusinessProfile(BusinessUpdateRequest requestDto) throws GenericErrorCodeException {
+    public BaseResponse createBusinessProfile(BusinessRequestDto requestDto) throws GenericErrorCodeException {
         Organization organization = organizationRepository.findByCreatorId(requestDto.getUserId())
             .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
 
-        if (organization.getBusinesses().isEmpty()) {
-
-            if (StringUtils.isNotBlank(requestDto.getEmail()) && organizationRepository.isEmailTaken(requestDto.getEmail())) {
-                throw new GenericErrorCodeException("Email is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
-            }
-            if (StringUtils.isNotBlank(requestDto.getAlternativePhoneNumber()) && organizationRepository.isPhoneNumberTaken(requestDto.getAlternativePhoneNumber())) {
-                throw new GenericErrorCodeException("Phone Number is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
-            }
-
-            User user = organization.getCreator();
-            user.setFullName(requestDto.getFullName());
-            user.setEmail(requestDto.getEmail());
-            user.setState(requestDto.getState());
-            user.setLga(requestDto.getLga());
-            user.setAltPhoneNumber(requestDto.getAlternativePhoneNumber());
-            user.setPhoto(requestDto.getPhotoBase64());
-            userRepository.save(user);
-        }
+        //Todo further clarification needed
+//        if (StringUtils.isNotBlank(requestDto.getEmail()) && organizationRepository.isEmailTaken(requestDto.getEmail())) {
+//            throw new GenericErrorCodeException("Email is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
+//        }
+//        if (StringUtils.isNotBlank(requestDto.getPhoneNumber()) && organizationRepository.isPhoneNumberTaken(requestDto.getPhoneNumber())) {
+//            throw new GenericErrorCodeException("Phone Number is already in use.", ErrorCode.BAD_REQUEST, HttpStatus.CONFLICT);
+//        }
 
         Business business = new Business();
         business.setId(UUIDGenerator.generate());
         business.setOrganization(organization);
-        business.setAddress(requestDto.getBusinessAddress());
+        business.setName(requestDto.getName());
+        business.setEmail(requestDto.getEmail());
+        business.setAddress(requestDto.getAddress());
+        business.setCountryCode(requestDto.getCountryCode());
+        business.setPhoneNumber(requestDto.getPhoneNumber());
+        business.setLogoImage(requestDto.getLogoImageBase64());
         business.setBusinessType(requestDto.getBusinessType());
         businessRepository.save(business);
 
-        CashPoint cashPoint = new CashPoint();
-        cashPoint.setId(UUIDGenerator.generate());
-        cashPoint.setBusiness(business);
-        cashPoint.setMain(true);
-        cashPoint.setActive(true);
-
-        String reference;
-        do {
-            reference = RandomNumberGenerator.generateAlphanumericCode(12);
-        } while (cashPointRepository.findByReference(reference).isPresent());
-        cashPoint.setReference(reference);
-        cashPointRepository.save(cashPoint);
+        cashPointService.createCashPoint(business);
 
         organization.addBusiness(business);
         organizationRepository.save(organization);
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
+    }
+
+    @Override
+    public BaseResponse updateBusinessProfile(BusinessUpdateRequestDto requestDto) throws GenericErrorCodeException {
+
+        Optional<Business> existingBusiness = businessRepository.findByUserIdAndBusinessId(requestDto.getUserId(), requestDto.getBusinessId());
+        if (existingBusiness.isEmpty()) {
+            throw GenericErrorCodeException.notFound("user does not exist");
+        }
+        Business businessDetails = existingBusiness.get();
+
+        if (StringUtils.isNotBlank(requestDto.getEmail())) {
+            businessDetails.setEmail(requestDto.getEmail());
+        }
+        if (StringUtils.isNotBlank(requestDto.getCacNumber())) {
+            businessDetails.setCacNumber(requestDto.getCacNumber());
+        }
+        if (StringUtils.isNotBlank(requestDto.getLogoImage())) {
+            businessDetails.setLogoImage(requestDto.getLogoImage());
+        }
+        if (StringUtils.isNotBlank(requestDto.getCountryCode())) {
+            businessDetails.setCountryCode(requestDto.getCountryCode());
+        }
+        if (StringUtils.isNotBlank(requestDto.getPhoneNumber())) {
+            businessDetails.setPhoneNumber(requestDto.getPhoneNumber());
+        }
+
+        businessRepository.save(businessDetails);
+
+        return BaseResponse.success("UPDATED", BaseResponseMessage.SUCCESSFUL);
     }
 
     @Override

@@ -4,7 +4,8 @@ BEGIN
     CREATE TABLE users (
         id NVARCHAR(50) PRIMARY KEY,
         phone_number NVARCHAR(15) NOT NULL UNIQUE,
-        full_name NVARCHAR(255) NULL,
+        first_name NVARCHAR(255) NULL,
+        last_name NVARCHAR(255) NULL,
         email NVARCHAR(255) NULL UNIQUE,
         address NVARCHAR(255) NULL,
         state NVARCHAR(255) NULL,
@@ -12,7 +13,7 @@ BEGIN
         alt_phone_number NVARCHAR(255) NULL,
         dob DATE NULL,
         role NVARCHAR(50) NOT NULL,
-        photo NVARCHAR NULL,
+        profile_photo NVARCHAR NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
     );
@@ -42,8 +43,9 @@ BEGIN
         name NVARCHAR(255) NULL,
         email NVARCHAR(255) NULL,
         address NVARCHAR(255) NULL,
-        state NVARCHAR(255) NULL,
-        lga NVARCHAR(255) NULL,
+        cac_number NVARCHAR(255) NULL,
+        logo_image NVARCHAR(255) NULL,
+        country_code NVARCHAR(255) NULL,
         phone_number NVARCHAR(20) NULL,
         business_type NVARCHAR(50) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
@@ -64,7 +66,7 @@ BEGIN
         business_id NVARCHAR(50) NOT NULL,
         virtual_account_no NVARCHAR(15) NULL,
         wallet_id NVARCHAR(15) NULL,
-        active BIT NOT NULL,
+        status NVARCHAR(15) NOT NULL,
         is_main BIT NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE(),
@@ -74,7 +76,7 @@ BEGIN
     CREATE INDEX idx_cash_points_business_id ON cash_points (business_id);
     CREATE INDEX idx_cash_points_virtual_account_no ON cash_points (virtual_account_no);
     CREATE INDEX idx_cash_points_wallet_id ON cash_points (wallet_id);
-    CREATE INDEX idx_cash_points_active ON cash_points (active);
+    CREATE INDEX idx_cash_points_status ON cash_points (status);
     CREATE INDEX idx_cash_points_is_main ON cash_points (is_main);
 END;
 

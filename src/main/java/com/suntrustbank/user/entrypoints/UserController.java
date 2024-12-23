@@ -3,10 +3,8 @@ package com.suntrustbank.user.entrypoints;
 import com.suntrustbank.user.core.dtos.BaseResponse;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.jwt.JwtUtil;
-import com.suntrustbank.user.entrypoints.dtos.SIgnUpRequest;
+import com.suntrustbank.user.entrypoints.dtos.*;
 import com.suntrustbank.user.entrypoints.services.UserService;
-import com.suntrustbank.user.entrypoints.dtos.BusinessUpdateRequest;
-import com.suntrustbank.user.entrypoints.dtos.UserRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -33,11 +31,25 @@ public class UserController {
         return userService.createUser(requestDto);
     }
 
+    @PutMapping("/update")
+    public BaseResponse updateUserAccount(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
+        var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        requestDto.setUserId(userId);
+        return userService.updateUser(requestDto);
+    }
+
     @PostMapping("/business")
-    public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessUpdateRequest requestDto) throws  GenericErrorCodeException {
+    public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessRequestDto requestDto) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
         return userService.createBusinessProfile(requestDto);
+    }
+
+    @PutMapping("/business/update")
+    public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
+        var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        requestDto.setUserId(userId);
+        return userService.updateBusinessProfile(requestDto);
     }
 
     @GetMapping("/business")

@@ -26,7 +26,9 @@ public class User {
     @Column(nullable = false)
     private String phoneNumber;
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String email;
 
@@ -43,7 +45,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private String photo;
+    private String profilePhoto;
 
     @CreationTimestamp
     private Date createdAt;

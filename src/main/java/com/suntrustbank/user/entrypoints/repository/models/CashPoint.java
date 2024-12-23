@@ -1,8 +1,7 @@
 package com.suntrustbank.user.entrypoints.repository.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.suntrustbank.user.entrypoints.dtos.enums.BusinessType;
+import com.suntrustbank.user.entrypoints.repository.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +33,8 @@ public class CashPoint {
 
     private String walletId;
 
-    private boolean active;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     private boolean isMain;
 

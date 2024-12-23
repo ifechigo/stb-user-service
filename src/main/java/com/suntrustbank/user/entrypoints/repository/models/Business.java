@@ -35,9 +35,11 @@ public class Business {
 
     private String address;
 
-    private String state;
+    private String cacNumber;
 
-    private String lga;
+    private String logoImage;
+
+    private String countryCode;
 
     private String phoneNumber;
 

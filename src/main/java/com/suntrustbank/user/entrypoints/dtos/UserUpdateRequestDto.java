@@ -25,7 +25,7 @@ public class UserUpdateRequestDto {
     private String altCountryCode;
     private String altPhoneNumber;
     private String dob;
-    private String profilePhoto;
+    private String profilePhotoBase64;
 
     @AssertTrue(message = "both altCountryCode and altPhoneNumber must either be provided together or left blank")
     public boolean isCountryCodeAndAltPhoneNumberValid() {

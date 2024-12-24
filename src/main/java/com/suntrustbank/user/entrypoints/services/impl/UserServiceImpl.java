@@ -161,8 +161,8 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isNotBlank(requestDto.getDob())) {
             userDetails.setDob(requestDto.getDob());
         }
-        if (StringUtils.isNotBlank(requestDto.getProfilePhoto())) {
-            userDetails.setProfilePhoto(requestDto.getProfilePhoto());
+        if (StringUtils.isNotBlank(requestDto.getProfilePhotoBase64())) {
+            userDetails.setProfilePhoto(requestDto.getProfilePhotoBase64());
         }
 
         userRepository.save(userDetails);
@@ -217,8 +217,8 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isNotBlank(requestDto.getCacNumber())) {
             businessDetails.setCacNumber(requestDto.getCacNumber());
         }
-        if (StringUtils.isNotBlank(requestDto.getLogoImage())) {
-            businessDetails.setLogoImage(requestDto.getLogoImage());
+        if (StringUtils.isNotBlank(requestDto.getLogoImageBase64())) {
+            businessDetails.setLogoImage(requestDto.getLogoImageBase64());
         }
         if (StringUtils.isNotBlank(requestDto.getCountryCode())) {
             businessDetails.setCountryCode(requestDto.getCountryCode());

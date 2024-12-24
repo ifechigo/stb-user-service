@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micrometer.common.util.StringUtils;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +21,7 @@ public class BusinessUpdateRequestDto {
     private String email;
 
     private String cacNumber;
-    private String logoImage;
+    private String logoImageBase64;
     private String countryCode;
     private String phoneNumber;
 

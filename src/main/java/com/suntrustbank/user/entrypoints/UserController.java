@@ -22,7 +22,7 @@ public class UserController {
     private final JwtUtil jwtService;
 
     @PostMapping("/signup")
-    public BaseResponse validatePhone(@RequestBody SIgnUpRequest phoneNumber) throws GenericErrorCodeException {
+    public BaseResponse validatePhone(@RequestBody @Validated SignUpRequest phoneNumber) throws GenericErrorCodeException {
         return userService.signUp(phoneNumber);
     }
 
@@ -39,16 +39,18 @@ public class UserController {
     }
 
     @PostMapping("/business")
-    public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessRequestDto requestDto) throws  GenericErrorCodeException {
+    public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated BusinessRequestDto requestDto) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
         return userService.createBusinessProfile(requestDto);
     }
 
-    @PutMapping("/business/update")
-    public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
+    @PutMapping("/business/{businessId}/update")
+    public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String businessId,
+        @RequestBody @Validated BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
+        requestDto.setBusinessId(businessId);
         return userService.updateBusinessProfile(requestDto);
     }
 

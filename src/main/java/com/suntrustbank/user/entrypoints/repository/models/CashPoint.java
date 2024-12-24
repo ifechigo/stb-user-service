@@ -22,9 +22,6 @@ public class CashPoint {
     @Id
     private String id;
 
-    @Column(nullable = false, unique = true)
-    private String reference;
-
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;

@@ -14,13 +14,11 @@ import com.suntrustbank.user.entrypoints.dtos.*;
 import com.suntrustbank.user.entrypoints.repository.*;
 import com.suntrustbank.user.entrypoints.repository.enums.OnboardingStatus;
 import com.suntrustbank.user.entrypoints.repository.enums.Role;
-import com.suntrustbank.user.entrypoints.repository.enums.Status;
 import com.suntrustbank.user.entrypoints.repository.models.*;
 import com.suntrustbank.user.entrypoints.services.CashPointService;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.services.NotificationService;
 import io.micrometer.common.util.StringUtils;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -28,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Optional;
 
 
@@ -54,8 +53,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public BaseResponse signUp(SIgnUpRequest request) throws GenericErrorCodeException {
-
+    public BaseResponse signUp(SignUpRequest request) throws GenericErrorCodeException {
         Onboarding onboarding = new Onboarding();
 
         Optional<Onboarding> existingRecord = onboardingRepository.findByPhoneNumber(request.getPhoneNumber());
@@ -92,10 +90,18 @@ public class UserServiceImpl implements UserService {
             throw new GenericErrorCodeException("invalid otp", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
+        Optional<Onboarding> onboardingRecord = onboardingRepository.findById(requestDto.getReference());
+        if (onboardingRecord.isEmpty()) {
+            throw GenericErrorCodeException.serverError();
+        }
+
+        Onboarding onboarding = onboardingRecord.get();
+
         String userId = UUIDGenerator.generate();
         User user = new User();
         user.setId(userId);
-        user.setPhoneNumber(onboardingRepository.findById(requestDto.getReference()).get().getPhoneNumber());
+        user.setCountryCode(onboarding.getCountryCode());
+        user.setPhoneNumber(onboarding.getPhoneNumber());
         user.setRole(Role.OWNER);
         userRepository.save(user);
         Organization organization = new Organization();
@@ -113,14 +119,15 @@ public class UserServiceImpl implements UserService {
             );
         }
 
-        onboardingRepository.updateStatusById(requestDto.getReference(), OnboardingStatus.PHONE_VERIFIED);
+        onboarding.setStatus(OnboardingStatus.PHONE_VERIFIED);
+        onboarding.setUpdatedAt(new Date());
+        onboardingRepository.save(onboarding);
 
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
     }
 
     @Override
     public BaseResponse updateUser(UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
-
         Optional<User> existingUser = userRepository.findById(requestDto.getUserId());
         if (existingUser.isEmpty()) {
             throw GenericErrorCodeException.notFound("user does not exist");
@@ -144,6 +151,9 @@ public class UserServiceImpl implements UserService {
         }
         if (StringUtils.isNotBlank(requestDto.getLga())) {
             userDetails.setLga(requestDto.getLga());
+        }
+        if (StringUtils.isNotBlank(requestDto.getAltCountryCode())) {
+            userDetails.setAltCountryCode(requestDto.getAltCountryCode());
         }
         if (StringUtils.isNotBlank(requestDto.getAltPhoneNumber())) {
             userDetails.setAltPhoneNumber(requestDto.getAltPhoneNumber());
@@ -195,7 +205,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse updateBusinessProfile(BusinessUpdateRequestDto requestDto) throws GenericErrorCodeException {
-
         Optional<Business> existingBusiness = businessRepository.findByUserIdAndBusinessId(requestDto.getUserId(), requestDto.getBusinessId());
         if (existingBusiness.isEmpty()) {
             throw GenericErrorCodeException.notFound("user does not exist");

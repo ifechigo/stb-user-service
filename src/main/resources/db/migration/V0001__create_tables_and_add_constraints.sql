@@ -3,17 +3,19 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
 BEGIN
     CREATE TABLE users (
         id NVARCHAR(50) PRIMARY KEY,
+        country_code NVARCHAR(5) NOT NULL,
         phone_number NVARCHAR(15) NOT NULL UNIQUE,
-        first_name NVARCHAR(255) NULL,
-        last_name NVARCHAR(255) NULL,
-        email NVARCHAR(255) NULL UNIQUE,
-        address NVARCHAR(255) NULL,
-        state NVARCHAR(255) NULL,
-        lga NVARCHAR(255) NULL,
-        alt_phone_number NVARCHAR(255) NULL,
-        dob DATE NULL,
+        first_name NVARCHAR(50) NULL,
+        last_name NVARCHAR(50) NULL,
+        email NVARCHAR(50) NULL UNIQUE,
+        address NVARCHAR(150) NULL,
+        state NVARCHAR(30) NULL,
+        lga NVARCHAR(50) NULL,
+        alt_country_code NVARCHAR(5) NULL,
+        alt_phone_number NVARCHAR(15) NULL,
+        dob NVARCHAR(15) NULL,
         role NVARCHAR(50) NOT NULL,
-        profile_photo NVARCHAR NULL,
+        profile_photo NVARCHAR(MAX) NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
     );
@@ -40,13 +42,13 @@ BEGIN
     CREATE TABLE businesses (
         id NVARCHAR(50) PRIMARY KEY,
         organization_id NVARCHAR(50) NOT NULL,
-        name NVARCHAR(255) NULL,
-        email NVARCHAR(255) NULL,
-        address NVARCHAR(255) NULL,
-        cac_number NVARCHAR(255) NULL,
-        logo_image NVARCHAR(255) NULL,
-        country_code NVARCHAR(255) NULL,
-        phone_number NVARCHAR(20) NULL,
+        name NVARCHAR(50) NULL,
+        email NVARCHAR(50) NULL,
+        address NVARCHAR(150) NULL,
+        cac_number NVARCHAR(30) NULL,
+        logo_image NVARCHAR(MAX) NULL,
+        country_code NVARCHAR(5) NULL,
+        phone_number NVARCHAR(15) NULL,
         business_type NVARCHAR(50) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE(),
@@ -62,7 +64,6 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='cash_points' AND xtype='U')
 BEGIN
     CREATE TABLE cash_points (
         id NVARCHAR(50) PRIMARY KEY,
-        reference NVARCHAR(20) NOT NULL UNIQUE,
         business_id NVARCHAR(50) NOT NULL,
         virtual_account_no NVARCHAR(15) NULL,
         wallet_id NVARCHAR(15) NULL,
@@ -72,7 +73,6 @@ BEGIN
         updated_at DATETIME DEFAULT GETDATE(),
         FOREIGN KEY (business_id) REFERENCES businesses (id)
     );
-    CREATE INDEX idx_cash_points_reference ON cash_points (reference);
     CREATE INDEX idx_cash_points_business_id ON cash_points (business_id);
     CREATE INDEX idx_cash_points_virtual_account_no ON cash_points (virtual_account_no);
     CREATE INDEX idx_cash_points_wallet_id ON cash_points (wallet_id);
@@ -85,8 +85,8 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='onboardings' AND xtype='U')
 BEGIN
     CREATE TABLE onboardings (
         id NVARCHAR(50) PRIMARY KEY,
-        country_code NVARCHAR(3) NOT NULL,
-        phone_number NVARCHAR(11) NOT NULL UNIQUE ,
+        country_code NVARCHAR(5) NOT NULL,
+        phone_number NVARCHAR(15) NOT NULL UNIQUE ,
         status NVARCHAR(50) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()

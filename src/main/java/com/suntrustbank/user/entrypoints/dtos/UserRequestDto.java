@@ -19,7 +19,5 @@ public class UserRequestDto {
     private String otp;
 
     @NotBlank(message = "pin cannot be empty")
-    @Size(min = PIN_LENGTH, message = "pin must be 4 digits long")
-    @Pattern(regexp = "\\d{4}", message = "Pin must only contain number/digits")
     private String pin;
 }

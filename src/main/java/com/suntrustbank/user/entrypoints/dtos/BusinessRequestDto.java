@@ -3,6 +3,8 @@ package com.suntrustbank.user.entrypoints.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.suntrustbank.user.entrypoints.dtos.enums.BusinessType;
+import io.micrometer.common.util.StringUtils;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -27,4 +29,11 @@ public class BusinessRequestDto {
     private String phoneNumber;
     private String logoImageBase64;
     private BusinessType businessType;
+
+    @AssertTrue(message = "both countryCode and phoneNumber must either be provided together or left blank")
+    public boolean isCountryCodeAndAltPhoneNumberValid() {
+        boolean isCountryCodeBlank = StringUtils.isBlank(countryCode);
+        boolean isAltPhoneNumberBlank = StringUtils.isBlank(phoneNumber);
+        return (isCountryCodeBlank && isAltPhoneNumberBlank) || (!isCountryCodeBlank && !isAltPhoneNumberBlank);
+    }
 }

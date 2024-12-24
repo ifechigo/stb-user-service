@@ -1,12 +1,9 @@
 package com.suntrustbank.user.entrypoints.dtos;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.suntrustbank.user.entrypoints.repository.enums.Role;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import io.micrometer.common.util.StringUtils;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +22,15 @@ public class UserUpdateRequestDto {
     private String address;
     private String state;
     private String lga;
+    private String altCountryCode;
     private String altPhoneNumber;
     private String dob;
     private String profilePhoto;
+
+    @AssertTrue(message = "both altCountryCode and altPhoneNumber must either be provided together or left blank")
+    public boolean isCountryCodeAndAltPhoneNumberValid() {
+        boolean isAltCountryCodeBlank = StringUtils.isBlank(altCountryCode);
+        boolean isAltPhoneNumberBlank = StringUtils.isBlank(altPhoneNumber);
+        return (isAltCountryCodeBlank && isAltPhoneNumberBlank) || (!isAltCountryCodeBlank && !isAltPhoneNumberBlank);
+    }
 }

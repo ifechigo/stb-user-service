@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SIgnUpRequest {
+public class SignUpRequest {
     @NotBlank(message = "country code is required and cannot be empty")
     private String countryCode;
 

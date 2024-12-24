@@ -24,6 +24,9 @@ public class User {
     private String id;
 
     @Column(nullable = false)
+    private String countryCode;
+
+    @Column(nullable = false)
     private String phoneNumber;
 
     private String firstName;
@@ -37,6 +40,8 @@ public class User {
     private String state;
 
     private String lga;
+
+    private String altCountryCode;
 
     private String altPhoneNumber;
 

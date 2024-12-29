@@ -25,7 +25,11 @@ import java.util.List;
 @Entity(name = "organizations")
 public class Organization {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String reference;
 
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
@@ -46,7 +50,7 @@ public class Organization {
             throw new GenericErrorCodeException("A user can only have a maximum of 2 businesses.", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
-        if (this.getBusinesses().size() == 1 && business.getBusinessType().equals(this.getBusinesses().getFirst().getBusinessType())) {
+        if (this.businesses.size() == 1 && business.getBusinessType().equals(this.getBusinesses().getFirst().getBusinessType())) {
             throw new GenericErrorCodeException(String.format("You have %s business attached to this account",
                     business.getBusinessType()), ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }

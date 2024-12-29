@@ -21,7 +21,11 @@ import java.util.Date;
 @Entity(name = "users")
 public class User {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String reference;
 
     @Column(nullable = false)
     private String countryCode;

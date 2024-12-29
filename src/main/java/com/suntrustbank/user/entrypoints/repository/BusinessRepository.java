@@ -7,7 +7,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface BusinessRepository extends JpaRepository<Business, String> {
+public interface BusinessRepository extends JpaRepository<Business, Long> {
+    Optional<Business> findByReference(String reference);
 
     @Query("""
         SELECT b FROM businesses b

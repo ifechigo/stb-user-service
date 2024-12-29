@@ -2,7 +2,6 @@ package com.suntrustbank.user.entrypoints.repository.models;
 
 
 import com.suntrustbank.user.entrypoints.repository.enums.OnboardingStatus;
-import com.suntrustbank.user.entrypoints.repository.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +19,11 @@ import java.util.Date;
 @Entity(name = "onboardings")
 public class Onboarding {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String reference;
 
     @Column(nullable = false, updatable = false)
     private String countryCode;

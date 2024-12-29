@@ -13,5 +13,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "service.user")
 public class ServiceConfig {
     private String authServiceUrl;
-    private String devAuthServiceUrl;
+    private String transactionServiceUrl;
 }

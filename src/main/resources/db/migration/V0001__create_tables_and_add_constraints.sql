@@ -1,8 +1,9 @@
 -- USERS Table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
+IF OBJECT_ID('users', 'U') IS NULL
 BEGIN
     CREATE TABLE users (
-        id NVARCHAR(50) PRIMARY KEY,
+        id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        reference NVARCHAR(50) NOT NULL UNIQUE,
         country_code NVARCHAR(5) NOT NULL,
         phone_number NVARCHAR(15) NOT NULL UNIQUE,
         first_name NVARCHAR(50) NULL,
@@ -24,11 +25,12 @@ BEGIN
 END;
 
 -- ORGANIZATIONS Table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='organizations' AND xtype='U')
+IF OBJECT_ID('organizations', 'U') IS NULL
 BEGIN
     CREATE TABLE organizations (
-        id NVARCHAR(50) PRIMARY KEY,
-        creator_id NVARCHAR(50) NOT NULL,
+        id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        reference NVARCHAR(50) NOT NULL UNIQUE,
+        creator_id BIGINT NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE(),
         FOREIGN KEY (creator_id) REFERENCES users (id)
@@ -37,11 +39,12 @@ BEGIN
 END;
 
 -- BUSINESSES Table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='businesses' AND xtype='U')
+IF OBJECT_ID('businesses', 'U') IS NULL
 BEGIN
     CREATE TABLE businesses (
-        id NVARCHAR(50) PRIMARY KEY,
-        organization_id NVARCHAR(50) NOT NULL,
+        id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        reference NVARCHAR(50) NOT NULL UNIQUE,
+        organization_id BIGINT NOT NULL,
         name NVARCHAR(50) NULL,
         email NVARCHAR(50) NULL,
         address NVARCHAR(150) NULL,
@@ -60,11 +63,12 @@ BEGIN
 END;
 
 -- CASHPOINT Table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='cash_points' AND xtype='U')
+IF OBJECT_ID('cash_points', 'U') IS NULL
 BEGIN
     CREATE TABLE cash_points (
-        id NVARCHAR(50) PRIMARY KEY,
-        business_id NVARCHAR(50) NOT NULL,
+        id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        reference NVARCHAR(50) NOT NULL UNIQUE,
+        business_id BIGINT NOT NULL,
         virtual_account_no NVARCHAR(15) NULL,
         wallet_id NVARCHAR(15) NULL,
         status NVARCHAR(15) NOT NULL,
@@ -81,10 +85,11 @@ BEGIN
 END;
 
 -- ONBOARDINGS Table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='onboardings' AND xtype='U')
+IF OBJECT_ID('onboardings', 'U') IS NULL
 BEGIN
     CREATE TABLE onboardings (
-        id NVARCHAR(50) PRIMARY KEY,
+        id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        reference NVARCHAR(50) NOT NULL UNIQUE,
         country_code NVARCHAR(5) NOT NULL,
         phone_number NVARCHAR(15) NOT NULL UNIQUE ,
         status NVARCHAR(50) NOT NULL,

@@ -1,5 +1,6 @@
 package com.suntrustbank.user.entrypoints.repository.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.suntrustbank.user.entrypoints.repository.enums.Status;
 import jakarta.persistence.*;
@@ -20,10 +21,15 @@ import java.util.Date;
 @Entity(name = "cash_points")
 public class CashPoint {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String reference;
 
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false)
+    @JsonBackReference
     private Business business;
 
     private String virtualAccountNo;

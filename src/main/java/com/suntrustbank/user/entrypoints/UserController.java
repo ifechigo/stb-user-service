@@ -42,7 +42,7 @@ public class UserController {
     public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated BusinessRequestDto requestDto) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
-        return userService.createBusinessProfile(requestDto);
+        return userService.createBusinessProfile(requestDto, authorizationHeader);
     }
 
     @PutMapping("/business/{businessId}/update")

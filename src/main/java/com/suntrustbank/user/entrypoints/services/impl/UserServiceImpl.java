@@ -35,7 +35,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final WebClientService<AuthRequestDto, AuthResponseDto> webClientService;
+    private final WebClientService<AuthRequestDto, AuthResponseDto> authWebClientService;
+    private final WebClientService<UserCopyRequestDto, UserCopyResponseDto> transactionWebClientService;
     private final NotificationService notificationService;
     private final CashPointService cashPointService;
 
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
         Optional<Onboarding> existingRecord = onboardingRepository.findByPhoneNumber(request.getPhoneNumber());
         if (existingRecord.isEmpty()) {
-            onboarding.setId(UUIDGenerator.generate());
+            onboarding.setReference(UUIDGenerator.generate());
             onboarding.setStatus(OnboardingStatus.AWAITING_PHONE_OTP);
             onboarding.setCountryCode(request.getCountryCode());
             onboarding.setPhoneNumber(request.getPhoneNumber());
@@ -77,9 +78,9 @@ public class UserServiceImpl implements UserService {
         } else {
             code = otpDevConfig.getPhoneOtp();
         }
-        cacheService.acquireLock(onboarding.getId(), code, LOCK_CHECK_TTL);
+        cacheService.acquireLock(onboarding.getReference(), code, LOCK_CHECK_TTL);
         notificationService.sendSMS(SmsRequest.builder().build());
-        return BaseResponse.success(OnboardingResponseDto.builder().reference(onboarding.getId()).build(), BaseResponseMessage.SUCCESSFUL);
+        return BaseResponse.success(OnboardingResponseDto.builder().reference(onboarding.getReference()).build(), BaseResponseMessage.SUCCESSFUL);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService {
             throw new GenericErrorCodeException("invalid otp", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
-        Optional<Onboarding> onboardingRecord = onboardingRepository.findById(requestDto.getReference());
+        Optional<Onboarding> onboardingRecord = onboardingRepository.findByReference(requestDto.getReference());
         if (onboardingRecord.isEmpty()) {
             throw GenericErrorCodeException.serverError();
         }
@@ -99,17 +100,17 @@ public class UserServiceImpl implements UserService {
 
         String userId = UUIDGenerator.generate();
         User user = new User();
-        user.setId(userId);
+        user.setReference(userId);
         user.setCountryCode(onboarding.getCountryCode());
         user.setPhoneNumber(onboarding.getPhoneNumber());
         user.setRole(Role.OWNER);
         userRepository.save(user);
         Organization organization = new Organization();
-        organization.setId(UUIDGenerator.generate());
+        organization.setReference(UUIDGenerator.generate());
         organization.setCreator(user);
         organizationRepository.save(organization);
 
-        AuthResponseDto authResponseDto = webClientService.request(AuthRequestDto.builder().userId(userId).phoneNumber(user.getPhoneNumber())
+        AuthResponseDto authResponseDto = authWebClientService.request(AuthRequestDto.builder().userId(userId).phoneNumber(user.getPhoneNumber())
             .pin(requestDto.getPin()).build());
         if (!authResponseDto.getStatus().equals("SUCCESS")) {
             throw new GenericErrorCodeException(
@@ -128,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse updateUser(UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
-        Optional<User> existingUser = userRepository.findById(requestDto.getUserId());
+        Optional<User> existingUser = userRepository.findByReference(requestDto.getUserId());
         if (existingUser.isEmpty()) {
             throw GenericErrorCodeException.notFound("user does not exist");
         }
@@ -172,8 +173,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public BaseResponse createBusinessProfile(BusinessRequestDto requestDto) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findByCreatorId(requestDto.getUserId())
+    public BaseResponse createBusinessProfile(BusinessRequestDto requestDto, String authorizationHeader) throws GenericErrorCodeException {
+        Organization organization = organizationRepository.findByCreator_Reference(requestDto.getUserId())
             .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
 
         //Todo further clarification needed
@@ -185,7 +186,7 @@ public class UserServiceImpl implements UserService {
 //        }
 
         Business business = new Business();
-        business.setId(UUIDGenerator.generate());
+        business.setReference(UUIDGenerator.generate());
         business.setOrganization(organization);
         business.setName(requestDto.getName());
         business.setEmail(requestDto.getEmail());
@@ -196,10 +197,25 @@ public class UserServiceImpl implements UserService {
         business.setBusinessType(requestDto.getBusinessType());
         businessRepository.save(business);
 
-        cashPointService.createCashPoint(business);
+        CashPoint cashPoint = cashPointService.createCashPoint(business);
 
         organization.addBusiness(business);
         organizationRepository.save(organization);
+
+        UserCopyResponseDto userCopyResponseDto = transactionWebClientService.request(UserCopyRequestDto.builder()
+                .authorization(authorizationHeader)
+                .creatorId(organization.getCreator().getReference())
+                .userId(requestDto.getUserId()).userFullName(organization.getCreator().getLastName() +" "+organization.getCreator().getFirstName())
+                .businessId(business.getReference()).businessName(business.getName())
+                .cashPointId(cashPoint.getReference()).walletId(cashPoint.getWalletId())
+                .build());
+        if (!userCopyResponseDto.getStatus().equals("SUCCESS")) {
+            throw new GenericErrorCodeException(
+                    userCopyResponseDto.getMessage(),
+                    ErrorCode.BAD_REQUEST,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
     }
 
@@ -234,7 +250,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse getBusiness(String userId) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findByCreatorId(userId)
+        Organization organization = organizationRepository.findByCreator_Reference(userId)
             .orElseThrow(() -> new  GenericErrorCodeException("user not found", ErrorCode.BAD_REQUEST, HttpStatus.NOT_FOUND));
         return BaseResponse.success(organization, BaseResponseMessage.SUCCESSFUL);
     }

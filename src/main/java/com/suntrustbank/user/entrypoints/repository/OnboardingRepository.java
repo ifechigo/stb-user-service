@@ -10,11 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-public interface OnboardingRepository extends JpaRepository<Onboarding, String> {
+public interface OnboardingRepository extends JpaRepository<Onboarding, Long> {
     Optional<Onboarding> findByPhoneNumber(String phoneNumber);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE onboardings o SET o.status = :status, o.updatedAt = CURRENT_TIMESTAMP WHERE o.id = :id")
-    int updateStatusById(String id, OnboardingStatus status);
+    Optional<Onboarding> findByReference(String reference);
 }

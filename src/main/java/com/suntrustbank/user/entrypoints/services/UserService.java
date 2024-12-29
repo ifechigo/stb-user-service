@@ -8,8 +8,5 @@ public interface UserService {
     BaseResponse signUp(SignUpRequest request) throws GenericErrorCodeException;
     BaseResponse createUser(UserRequestDto requestDto) throws GenericErrorCodeException;
     BaseResponse updateUser(UserUpdateRequestDto requestDto) throws GenericErrorCodeException;
-    BaseResponse createBusinessProfile(BusinessRequestDto requestDto, String authorizationHeader) throws GenericErrorCodeException;
-    BaseResponse updateBusinessProfile(BusinessUpdateRequestDto requestDto) throws GenericErrorCodeException;
-    BaseResponse getBusiness(String userId) throws GenericErrorCodeException;
 
 }

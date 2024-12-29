@@ -4,6 +4,7 @@ import com.suntrustbank.user.core.dtos.BaseResponse;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.utils.jwt.JwtUtil;
 import com.suntrustbank.user.entrypoints.dtos.*;
+import com.suntrustbank.user.entrypoints.services.BusinessService;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
 public class UserController {
 
     private final UserService userService;
+    private final BusinessService businessService;
     private final JwtUtil jwtService;
 
     @PostMapping("/signup")
@@ -42,7 +44,7 @@ public class UserController {
     public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated BusinessRequestDto requestDto) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
-        return userService.createBusinessProfile(requestDto, authorizationHeader);
+        return businessService.createBusinessProfile(requestDto, authorizationHeader);
     }
 
     @PutMapping("/business/{businessId}/update")
@@ -51,12 +53,12 @@ public class UserController {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
         requestDto.setBusinessId(businessId);
-        return userService.updateBusinessProfile(requestDto);
+        return businessService.updateBusinessProfile(requestDto);
     }
 
     @GetMapping("/business")
     public BaseResponse getUserBusiness(@RequestHeader("Authorization") String authorizationHeader) throws  GenericErrorCodeException {
         var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
-        return userService.getBusiness(userId);
+        return businessService.getBusiness(userId);
     }
 }

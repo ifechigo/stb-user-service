@@ -55,6 +55,6 @@ public class Organization {
                     business.getBusinessType()), ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
 
-        this.businesses.add(business);
+//        this.businesses.add(business);
     }
 }

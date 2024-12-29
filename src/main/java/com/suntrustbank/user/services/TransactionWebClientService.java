@@ -5,8 +5,8 @@ import com.suntrustbank.user.core.configs.webclient.AbstractWebClientService;
 import com.suntrustbank.user.core.configs.webclient.ProviderConfigure;
 import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
 import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
-import com.suntrustbank.user.entrypoints.dtos.UserCopyRequestDto;
-import com.suntrustbank.user.entrypoints.dtos.UserCopyResponseDto;
+import com.suntrustbank.user.entrypoints.dtos.TransactionUserRequestDto;
+import com.suntrustbank.user.entrypoints.dtos.TransactionUserResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TransactionWebClientService extends AbstractWebClientService<UserCopyRequestDto, UserCopyResponseDto> {
+public class TransactionWebClientService extends AbstractWebClientService<TransactionUserRequestDto, TransactionUserResponseDto> {
 
     private final ServiceConfig config;
 
@@ -29,8 +29,8 @@ public class TransactionWebClientService extends AbstractWebClientService<UserCo
     }
 
     @Override
-    public UserCopyResponseDto request(UserCopyRequestDto request) {
-        return callAPI(HttpMethod.POST, "/copy").
+    public TransactionUserResponseDto request(TransactionUserRequestDto request) {
+        return callAPI(HttpMethod.POST, "/save").
             body(BodyInserters.fromValue(request)).
             header("Authorization", request.getAuthorization()).
             exchangeToMono(this::toResponseOrError).
@@ -39,15 +39,15 @@ public class TransactionWebClientService extends AbstractWebClientService<UserCo
             block();
     }
 
-    private Mono<UserCopyResponseDto> toError(WebClientResponseException exception) {
+    private Mono<TransactionUserResponseDto> toError(WebClientResponseException exception) {
         AuthResponseDto.Error error = exception.getResponseBodyAs(AuthResponseDto.Error.class);
         throw new AuthWebClientException(error);
     }
 
-    private Mono<UserCopyResponseDto> toResponseOrError(ClientResponse clientResponse) {
+    private Mono<TransactionUserResponseDto> toResponseOrError(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
             return clientResponse.createError();
         }
-        return clientResponse.bodyToMono(UserCopyResponseDto.class);
+        return clientResponse.bodyToMono(TransactionUserResponseDto.class);
     }
 }

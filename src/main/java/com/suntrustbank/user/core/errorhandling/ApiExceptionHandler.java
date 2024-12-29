@@ -6,7 +6,7 @@ import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientExceptio
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.errorhandling.exceptions.TransactionWebClientException;
 import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
-import com.suntrustbank.user.entrypoints.dtos.UserCopyResponseDto;
+import com.suntrustbank.user.entrypoints.dtos.TransactionUserResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -66,7 +66,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(TransactionWebClientException.class)
-    public ResponseEntity<UserCopyResponseDto.Error> handleTransactionWebClientException(TransactionWebClientException ex) {
+    public ResponseEntity<TransactionUserResponseDto.Error> handleTransactionWebClientException(TransactionWebClientException ex) {
         log.error(EXCEPTION_WAS_THROWN, ex );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ex.getError());

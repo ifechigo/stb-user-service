@@ -6,15 +6,15 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserCopyRequestDto {
+public class TransactionUserRequestDto {
     @JsonIgnore
     private String authorization;
 
-    private String creatorId;
-    private String userId;
+    private String creatorReference;
+    private String userReference;
     private String userFullName;
-    private String businessId;
+    private String businessReference;
     private String businessName;
-    private String cashPointId;
+    private String cashPointReference;
     private String walletId;
 }

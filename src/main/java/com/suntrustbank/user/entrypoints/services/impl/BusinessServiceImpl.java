@@ -41,6 +41,8 @@ public class BusinessServiceImpl implements BusinessService {
         Organization organization = organizationRepository.findByCreator_Reference(requestDto.getUserId())
             .orElseThrow(() ->  GenericErrorCodeException.notFound("user not found"));
 
+        log.info("number of businesses present [{}]", organization.getBusinesses().size());
+
 
         //Todo further clarification needed
 //        if (StringUtils.isNotBlank(requestDto.getEmail()) && organizationRepository.isEmailTaken(requestDto.getEmail())) {

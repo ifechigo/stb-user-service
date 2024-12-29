@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -54,7 +56,5 @@ public class Organization {
             throw new GenericErrorCodeException(String.format("You have %s business attached to this account",
                     business.getBusinessType()), ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
         }
-
-//        this.businesses.add(business);
     }
 }

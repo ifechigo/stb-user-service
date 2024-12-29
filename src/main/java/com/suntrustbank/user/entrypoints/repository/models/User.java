@@ -1,6 +1,7 @@
 package com.suntrustbank.user.entrypoints.repository.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.suntrustbank.user.entrypoints.repository.enums.Role;
 import jakarta.persistence.*;
@@ -20,6 +21,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity(name = "users")
 public class User {
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,6 +1,7 @@
 package com.suntrustbank.user.entrypoints.repository.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.suntrustbank.user.entrypoints.dtos.enums.BusinessType;
@@ -22,6 +23,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity(name = "businesses")
 public class Business {
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

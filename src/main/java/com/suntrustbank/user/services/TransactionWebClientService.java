@@ -4,6 +4,7 @@ import com.suntrustbank.user.core.configs.properties.ServiceConfig;
 import com.suntrustbank.user.core.configs.webclient.AbstractWebClientService;
 import com.suntrustbank.user.core.configs.webclient.ProviderConfigure;
 import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
+import com.suntrustbank.user.core.errorhandling.exceptions.TransactionWebClientException;
 import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
 import com.suntrustbank.user.entrypoints.dtos.TransactionUserRequestDto;
 import com.suntrustbank.user.entrypoints.dtos.TransactionUserResponseDto;
@@ -40,8 +41,8 @@ public class TransactionWebClientService extends AbstractWebClientService<Transa
     }
 
     private Mono<TransactionUserResponseDto> toError(WebClientResponseException exception) {
-        AuthResponseDto.Error error = exception.getResponseBodyAs(AuthResponseDto.Error.class);
-        throw new AuthWebClientException(error);
+        TransactionUserResponseDto.Error error = exception.getResponseBodyAs(TransactionUserResponseDto.Error.class);
+        throw new TransactionWebClientException(error);
     }
 
     private Mono<TransactionUserResponseDto> toResponseOrError(ClientResponse clientResponse) {

@@ -13,6 +13,8 @@ import com.suntrustbank.user.entrypoints.repository.OrganizationRepository;
 import com.suntrustbank.user.entrypoints.repository.models.*;
 import com.suntrustbank.user.entrypoints.services.BusinessService;
 import com.suntrustbank.user.entrypoints.services.CashPointService;
+import com.suntrustbank.user.services.dtos.GenericTransactionResponseDto;
+import com.suntrustbank.user.services.dtos.TransactionUserRequestDto;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 
 @Slf4j
@@ -28,7 +31,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BusinessServiceImpl implements BusinessService {
 
-    private final WebClientService<TransactionUserRequestDto, TransactionUserResponseDto> transactionWebClientService;
     private final CashPointService cashPointService;
 
     private final BusinessRepository businessRepository;
@@ -38,7 +40,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     @Transactional
     public BaseResponse createBusinessProfile(BusinessRequestDto requestDto, String authorizationHeader) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findByCreator_Reference(requestDto.getUserId())
+        Organization organization = organizationRepository.findByCreator_Reference(requestDto.getUserReference())
             .orElseThrow(() ->  GenericErrorCodeException.notFound("user not found"));
 
         log.info("number of businesses present [{}]", organization.getBusinesses().size());
@@ -67,28 +69,16 @@ public class BusinessServiceImpl implements BusinessService {
         organization.addBusiness(business);
         organizationRepository.save(organization);
 
-        CashPoint cashPoint = cashPointService.createCashPoint(business);
+        CashPoint cashPoint = cashPointService.createCashPoint(authorizationHeader, organization, business);
 
-        TransactionUserResponseDto transactionUserResponseDto = transactionWebClientService.request(TransactionUserRequestDto.builder()
-                .authorization(authorizationHeader)
-                .creatorReference(organization.getCreator().getReference())
-                .userReference(requestDto.getUserId()).userFullName(organization.getCreator().getLastName() +" "+organization.getCreator().getFirstName())
-                .businessReference(business.getReference()).businessName(business.getName())
-                .cashPointReference(cashPoint.getReference()).walletId(cashPoint.getWalletId())
-                .build());
-        if (!transactionUserResponseDto.getStatus().equals("SUCCESS")) {
-            throw new GenericErrorCodeException(
-                    transactionUserResponseDto.getMessage(),
-                    ErrorCode.BAD_REQUEST,
-                    HttpStatus.BAD_REQUEST
-            );
-        }
+        CompletableFuture.runAsync(() -> cashPointService.createNGNCashPointWallet(cashPoint));
+
         return BaseResponse.success(business, BaseResponseMessage.SUCCESSFUL);
     }
 
     @Override
     public BaseResponse updateBusinessProfile(BusinessUpdateRequestDto requestDto) throws GenericErrorCodeException {
-        Optional<Business> existingBusiness = businessRepository.findByUserIdAndBusinessId(requestDto.getUserId(), requestDto.getBusinessId());
+        Optional<Business> existingBusiness = businessRepository.findByUserReferenceAndBusinessReference(requestDto.getUserReference(), requestDto.getBusinessReference());
         if (existingBusiness.isEmpty()) {
             throw GenericErrorCodeException.notFound("user does not exist");
         }
@@ -118,7 +108,21 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public BaseResponse getBusiness(String userId) throws GenericErrorCodeException {
         Organization organization = organizationRepository.findByCreator_Reference(userId)
-            .orElseThrow(() ->  GenericErrorCodeException.notFound("user not found"));
+                .orElseThrow(() -> GenericErrorCodeException.notFound("user not found"));
+
+        for (Business business : organization.getBusinesses()) {
+            for (CashPoint cashPoint : business.getCashPoints()) {
+                if (StringUtils.isBlank(cashPoint.getWalletReference())) {
+                    try {
+                        CashPoint newCashPoint = cashPointService.createNGNCashPointWallet(cashPoint);
+                        cashPoint.setWalletReference(newCashPoint.getWalletReference());
+                    } catch (Exception e) {
+                        log.error("BusinessServiceImpl.getBusiness Failed, wallet reference and call to generate one failed. Error [{}]", e.getMessage(), e);
+                        throw GenericErrorCodeException.serverError();
+                    }
+                }
+            }
+        }
 
         return BaseResponse.success(BusinessResponseDto.toDto(organization), BaseResponseMessage.SUCCESSFUL);
     }

@@ -5,8 +5,10 @@ import com.suntrustbank.user.core.enums.ErrorCode;
 import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import com.suntrustbank.user.core.errorhandling.exceptions.TransactionWebClientException;
-import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
-import com.suntrustbank.user.entrypoints.dtos.TransactionUserResponseDto;
+import com.suntrustbank.user.core.errorhandling.exceptions.WalletWebClientException;
+import com.suntrustbank.user.services.dtos.AuthResponseDto;
+import com.suntrustbank.user.services.dtos.GenericTransactionResponseDto;
+import com.suntrustbank.user.services.dtos.WalletCreationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -66,7 +68,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(TransactionWebClientException.class)
-    public ResponseEntity<TransactionUserResponseDto.Error> handleTransactionWebClientException(TransactionWebClientException ex) {
+    public ResponseEntity<GenericTransactionResponseDto.Error> handleTransactionWebClientException(TransactionWebClientException ex) {
+        log.error(EXCEPTION_WAS_THROWN, ex );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ex.getError());
+    }
+
+    @ExceptionHandler(WalletWebClientException.class)
+    public ResponseEntity<WalletCreationResponse.Error> handleTransactionWebClientException(WalletWebClientException ex) {
         log.error(EXCEPTION_WAS_THROWN, ex );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ex.getError());

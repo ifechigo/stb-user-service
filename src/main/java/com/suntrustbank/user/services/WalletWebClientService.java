@@ -3,9 +3,9 @@ package com.suntrustbank.user.services;
 import com.suntrustbank.user.core.configs.properties.ServiceConfig;
 import com.suntrustbank.user.core.configs.webclient.AbstractWebClientService;
 import com.suntrustbank.user.core.configs.webclient.ProviderConfigure;
-import com.suntrustbank.user.core.errorhandling.exceptions.AuthWebClientException;
-import com.suntrustbank.user.services.dtos.AuthRequestDto;
-import com.suntrustbank.user.services.dtos.AuthResponseDto;
+import com.suntrustbank.user.core.errorhandling.exceptions.WalletWebClientException;
+import com.suntrustbank.user.services.dtos.WalletCreationRequest;
+import com.suntrustbank.user.services.dtos.WalletCreationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -18,18 +18,18 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthWebClientService extends AbstractWebClientService<AuthRequestDto, AuthResponseDto> {
+public class WalletWebClientService extends AbstractWebClientService<WalletCreationRequest, WalletCreationResponse> {
 
     private final ServiceConfig config;
 
     @Override
     public ProviderConfigure configure() {
-        return ProviderConfigure.builder().baseUrl(config.getAuthServiceUrl()).build();
+        return ProviderConfigure.builder().baseUrl(config.getWalletServiceUrl()).build();
     }
 
     @Override
-    public AuthResponseDto request(AuthRequestDto requestDto) {
-        return callAPI(HttpMethod.POST, "/user/signup").
+    public WalletCreationResponse request(WalletCreationRequest requestDto) {
+        return callAPI(HttpMethod.POST, "").
             body(BodyInserters.fromValue(requestDto)).
             exchangeToMono(this::toResponseOrError).
             doOnError(exception -> log.error("Error occurred while creating user on the Auth service", exception)).
@@ -37,15 +37,15 @@ public class AuthWebClientService extends AbstractWebClientService<AuthRequestDt
             block();
     }
 
-    private Mono<AuthResponseDto> toError(WebClientResponseException exception) {
-        AuthResponseDto.Error error = exception.getResponseBodyAs(AuthResponseDto.Error.class);
-        throw new AuthWebClientException(error);
+    private Mono<WalletCreationResponse> toError(WebClientResponseException exception) {
+        WalletCreationResponse.Error error = exception.getResponseBodyAs(WalletCreationResponse.Error.class);
+        throw new WalletWebClientException(error);
     }
 
-    private Mono<AuthResponseDto> toResponseOrError(ClientResponse clientResponse) {
+    private Mono<WalletCreationResponse> toResponseOrError(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
             return clientResponse.createError();
         }
-        return clientResponse.bodyToMono(AuthResponseDto.class);
+        return clientResponse.bodyToMono(WalletCreationResponse.class);
     }
 }

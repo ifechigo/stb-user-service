@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 public class BusinessRequestDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String userId;
+    private String userReference;
 
     @NotBlank(message = "business name is required and cannot be empty")
     private String name;

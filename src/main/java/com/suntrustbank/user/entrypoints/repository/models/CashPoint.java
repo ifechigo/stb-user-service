@@ -34,7 +34,7 @@ public class CashPoint {
 
     private String virtualAccountNo;
 
-    private String walletId;
+    private String walletReference;
 
     @Enumerated(EnumType.STRING)
     private Status status;

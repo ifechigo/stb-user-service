@@ -1,4 +1,4 @@
-package com.suntrustbank.user.entrypoints.dtos;
+package com.suntrustbank.user.services.dtos;
 
 import lombok.Builder;
 import lombok.Getter;

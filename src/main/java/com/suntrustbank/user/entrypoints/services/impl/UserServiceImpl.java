@@ -17,6 +17,8 @@ import com.suntrustbank.user.entrypoints.repository.enums.Role;
 import com.suntrustbank.user.entrypoints.repository.models.*;
 import com.suntrustbank.user.entrypoints.services.UserService;
 import com.suntrustbank.user.services.NotificationService;
+import com.suntrustbank.user.services.dtos.AuthRequestDto;
+import com.suntrustbank.user.services.dtos.AuthResponseDto;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,14 +84,18 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public BaseResponse createUser(UserRequestDto requestDto) throws GenericErrorCodeException {
+        Optional<Onboarding> onboardingRecord = onboardingRepository.findByReference(requestDto.getReference());
+        if (onboardingRecord.isEmpty()) {
+            throw GenericErrorCodeException.badRequest("invalid reference");
+        }
+
+        if (onboardingRecord.get().getStatus().equals(OnboardingStatus.PHONE_VERIFIED)) {
+            return BaseResponse.success("already verified", BaseResponseMessage.SUCCESSFUL);
+        }
+
         String code = cacheService.get(requestDto.getReference());
         if (StringUtils.isBlank(code) || !code.equalsIgnoreCase(requestDto.getOtp())) {
             throw new GenericErrorCodeException("invalid otp", ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<Onboarding> onboardingRecord = onboardingRepository.findByReference(requestDto.getReference());
-        if (onboardingRecord.isEmpty()) {
-            throw GenericErrorCodeException.serverError();
         }
 
         Onboarding onboarding = onboardingRecord.get();
@@ -119,6 +125,8 @@ public class UserServiceImpl implements UserService {
         onboarding.setStatus(OnboardingStatus.PHONE_VERIFIED);
         onboarding.setUpdatedAt(new Date());
         onboardingRepository.save(onboarding);
+
+        cacheService.releaseLock(requestDto.getReference());
 
         return BaseResponse.success(user, BaseResponseMessage.SUCCESSFUL);
     }

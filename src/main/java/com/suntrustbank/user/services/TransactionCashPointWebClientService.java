@@ -4,7 +4,7 @@ import com.suntrustbank.user.core.configs.properties.ServiceConfig;
 import com.suntrustbank.user.core.configs.webclient.AbstractWebClientService;
 import com.suntrustbank.user.core.configs.webclient.ProviderConfigure;
 import com.suntrustbank.user.core.errorhandling.exceptions.TransactionWebClientException;
-import com.suntrustbank.user.services.dtos.TransactionUserRequestDto;
+import com.suntrustbank.user.services.dtos.CashPointUpdateRequest;
 import com.suntrustbank.user.services.dtos.GenericTransactionResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TransactionWebClientService extends AbstractWebClientService<TransactionUserRequestDto, GenericTransactionResponseDto> {
+public class TransactionCashPointWebClientService extends AbstractWebClientService<CashPointUpdateRequest, GenericTransactionResponseDto> {
 
     private final ServiceConfig config;
 
@@ -28,12 +28,11 @@ public class TransactionWebClientService extends AbstractWebClientService<Transa
     }
 
     @Override
-    public GenericTransactionResponseDto request(TransactionUserRequestDto request) {
-        return callAPI(HttpMethod.POST, "/cash-point/save").
+    public GenericTransactionResponseDto request(CashPointUpdateRequest request) {
+        return callAPI(HttpMethod.POST, "/cash-point/update").
             body(BodyInserters.fromValue(request)).
-            header("Authorization", request.getAuthorization()).
             exchangeToMono(this::toResponseOrError).
-            doOnError(exception -> log.error("Error occurred while creating a mini copy on the user service on transaction service", exception)).
+            doOnError(exception -> log.error("Error occurred while updating copy of cashpoint's wallet reference on transaction service", exception)).
             onErrorResume(WebClientResponseException.class, this::toError).
             block();
     }

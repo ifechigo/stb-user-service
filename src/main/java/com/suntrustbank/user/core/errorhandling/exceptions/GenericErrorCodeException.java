@@ -21,6 +21,10 @@ public class GenericErrorCodeException extends RuntimeException {
         this.httpStatus = HttpStatus.BAD_REQUEST;
     }
 
+    public static GenericErrorCodeException badRequest(String message) {
+        return new GenericErrorCodeException(message, ErrorCode.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+    }
+
     public static GenericErrorCodeException unauthenticated() {
         return new GenericErrorCodeException(ErrorCode.UNAUTHORIZED.getDescription(),
             ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);

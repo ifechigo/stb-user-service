@@ -1,5 +1,6 @@
-package com.suntrustbank.user.entrypoints.dtos;
+package com.suntrustbank.user.services.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,9 +8,9 @@ import java.util.List;
 
 @Getter
 @Setter
-public class AuthResponseDto {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class GenericTransactionResponseDto {
     private String status;
-    private Data data;
     private String message;
 
     @Getter
@@ -18,13 +19,5 @@ public class AuthResponseDto {
         private String status;
         private List<String> messages;
         private List<String> errors;
-    }
-
-    @Getter
-    @Setter
-    public static class Data {
-        private long expiresIn;
-        private String token;
-        private String tokenType;
     }
 }

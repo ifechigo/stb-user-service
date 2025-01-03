@@ -1,7 +1,7 @@
 package com.suntrustbank.user.core.errorhandling.exceptions;
 
 
-import com.suntrustbank.user.entrypoints.dtos.AuthResponseDto;
+import com.suntrustbank.user.services.dtos.AuthResponseDto;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;

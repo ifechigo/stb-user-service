@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Status {
+    INACTIVE,
     ACTIVE,
     SUSPENDED,
     DELETED

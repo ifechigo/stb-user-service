@@ -1,6 +1,5 @@
-package com.suntrustbank.user.entrypoints.dtos;
+package com.suntrustbank.user.services.dtos;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,10 +7,9 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class TransactionUserResponseDto {
+public class AuthResponseDto {
     private String status;
-//    private String data;
+    private Data data;
     private String message;
 
     @Getter

@@ -14,7 +14,7 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
         SELECT b FROM businesses b
         JOIN b.organization o
         JOIN o.creator u
-        WHERE u.id = :userId AND b.id = :businessId
+        WHERE u.reference = :userReference AND b.reference = :businessReference
     """)
-    Optional<Business> findByUserIdAndBusinessId(@Param("userId") String userId, @Param("businessId") String businessId);
+    Optional<Business> findByUserReferenceAndBusinessReference(@Param("userReference") String userReference, @Param("businessReference") String businessReference);
 }

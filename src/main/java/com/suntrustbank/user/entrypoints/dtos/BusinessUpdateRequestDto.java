@@ -12,10 +12,10 @@ import lombok.Setter;
 @Setter
 public class BusinessUpdateRequestDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String userId;
+    private String userReference;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String businessId;
+    private String businessReference;
 
     @Email(message = "invalid email format")
     private String email;

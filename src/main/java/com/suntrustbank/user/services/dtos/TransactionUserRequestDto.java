@@ -1,4 +1,4 @@
-package com.suntrustbank.user.entrypoints.dtos;
+package com.suntrustbank.user.services.dtos;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
@@ -16,5 +16,5 @@ public class TransactionUserRequestDto {
     private String businessReference;
     private String businessName;
     private String cashPointReference;
-    private String walletId;
+    private String walletReference;
 }

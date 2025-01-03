@@ -14,4 +14,5 @@ import org.springframework.context.annotation.Configuration;
 public class ServiceConfig {
     private String authServiceUrl;
     private String transactionServiceUrl;
+    private String walletServiceUrl;
 }

@@ -6,17 +6,17 @@ BEGIN
         reference NVARCHAR(50) NOT NULL UNIQUE,
         country_code NVARCHAR(5) NOT NULL,
         phone_number NVARCHAR(15) NOT NULL UNIQUE,
-        first_name NVARCHAR(50) NULL,
-        last_name NVARCHAR(50) NULL,
-        email NVARCHAR(50) NULL UNIQUE,
-        address NVARCHAR(150) NULL,
-        state NVARCHAR(30) NULL,
-        lga NVARCHAR(50) NULL,
-        alt_country_code NVARCHAR(5) NULL,
-        alt_phone_number NVARCHAR(15) NULL,
-        dob NVARCHAR(15) NULL,
+        first_name NVARCHAR(50),
+        last_name NVARCHAR(50),
+        email NVARCHAR(50),
+        address NVARCHAR(150),
+        state NVARCHAR(30),
+        lga NVARCHAR(50),
+        alt_country_code NVARCHAR(5),
+        alt_phone_number NVARCHAR(15),
+        dob NVARCHAR(15),
         role NVARCHAR(50) NOT NULL,
-        profile_photo NVARCHAR(MAX) NULL,
+        profile_photo NVARCHAR(MAX),
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
     );
@@ -70,7 +70,7 @@ BEGIN
         reference NVARCHAR(50) NOT NULL UNIQUE,
         business_id BIGINT NOT NULL,
         virtual_account_no NVARCHAR(15) NULL,
-        wallet_id NVARCHAR(15) NULL,
+        wallet_reference NVARCHAR(50) NULL,
         status NVARCHAR(15) NOT NULL,
         is_main BIT NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT GETDATE(),
@@ -79,7 +79,7 @@ BEGIN
     );
     CREATE INDEX idx_cash_points_business_id ON cash_points (business_id);
     CREATE INDEX idx_cash_points_virtual_account_no ON cash_points (virtual_account_no);
-    CREATE INDEX idx_cash_points_wallet_id ON cash_points (wallet_id);
+    CREATE INDEX idx_cash_points_wallet_reference ON cash_points (wallet_reference);
     CREATE INDEX idx_cash_points_status ON cash_points (status);
     CREATE INDEX idx_cash_points_is_main ON cash_points (is_main);
 END;

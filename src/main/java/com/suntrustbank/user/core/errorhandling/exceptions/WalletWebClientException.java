@@ -1,7 +1,7 @@
 package com.suntrustbank.user.core.errorhandling.exceptions;
 
 
-import com.suntrustbank.user.services.dtos.GenericTransactionResponseDto;
+import com.suntrustbank.user.services.dtos.WalletCreationResponse;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,11 +9,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Generated
-public class TransactionWebClientException extends RuntimeException {
+public class WalletWebClientException extends RuntimeException {
     public static final int SERVER_ERROR = 500;
-    private GenericTransactionResponseDto.Error error;
+    private WalletCreationResponse.Error error;
 
-    public TransactionWebClientException(GenericTransactionResponseDto.Error error) {
+    public WalletWebClientException(WalletCreationResponse.Error error) {
         super(error.getMessages().getFirst());
         this.error = error;
     }

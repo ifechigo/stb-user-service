@@ -34,7 +34,7 @@ public class BusinessResponseDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class CashPoint {
         private String reference;
-        private String walletId;
+        private String walletReference;
         private Status status;
         private boolean main;
     }
@@ -58,7 +58,7 @@ public class BusinessResponseDto {
                             .map(cashPoint -> {
                                 BusinessResponseDto.CashPoint cashPointDto = new BusinessResponseDto.CashPoint();
                                 cashPointDto.setReference(cashPoint.getReference());
-                                cashPointDto.setWalletId(cashPoint.getWalletId());
+                                cashPointDto.setWalletReference(cashPoint.getWalletReference());
                                 cashPointDto.setStatus(cashPoint.getStatus());
                                 cashPointDto.setMain(cashPoint.isMain());
                                 return cashPointDto;

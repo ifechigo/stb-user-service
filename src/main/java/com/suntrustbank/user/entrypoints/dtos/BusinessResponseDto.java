@@ -5,6 +5,7 @@ import com.suntrustbank.user.entrypoints.repository.enums.Status;
 import com.suntrustbank.user.entrypoints.repository.models.Organization;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
@@ -12,7 +13,27 @@ import java.util.List;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BusinessResponseDto {
+    private User user;
     private List<Business> businesses;
+
+    @Getter
+    @Setter
+    public static class User {
+        private String reference;
+        private String countryCode;
+        private String phoneNumber;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String address;
+        private String state;
+        private String lga;
+        private String altCountryCode;
+        private String altPhoneNumber;
+        private String dob;
+        private String role;
+        private String profilePhoto;
+    }
 
     @Getter
     @Setter
@@ -41,6 +62,11 @@ public class BusinessResponseDto {
 
     public static BusinessResponseDto toDto(Organization organization) {
         BusinessResponseDto businessResponseDto = new BusinessResponseDto();
+
+        User user = new User();
+        BeanUtils.copyProperties(organization.getCreator(), user);
+        businessResponseDto.setUser(user);
+        businessResponseDto.getUser().setRole(organization.getCreator().getRole().name());
 
         List<BusinessResponseDto.Business> businessDtos = organization.getBusinesses().stream()
                 .map(business -> {
@@ -72,5 +98,4 @@ public class BusinessResponseDto {
 
         return businessResponseDto;
     }
-
 }

@@ -1,6 +1,5 @@
 package com.suntrustbank.user.core.configs.webclient;
 
-import com.suntrustbank.user.core.configs.logging.LogbookConfiguration;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.logging.LogLevel;
 import org.springframework.http.HttpMethod;
@@ -47,19 +46,13 @@ public abstract class AbstractWebClientService<I, O> implements WebClientService
             .orElse(new HashMap<>());
         headers.forEach(webClientBuilder::defaultHeader);
 
-
         // set custom filter functions
         final List<ExchangeFilterFunction> exchangeFilterFunctions = Optional
             .ofNullable(providerConfigure.getFilterFunctions())
             .orElse(new ArrayList<>());
 
-        // add logbook instance for request logging
-        final Logbook logbook = LogbookConfiguration.instance();
-        exchangeFilterFunctions.add(new LogbookExchangeFilterFunction(logbook));
-
         // add filters
         exchangeFilterFunctions.forEach(webClientBuilder::filter);
-
 
         // set channel handlers
         final List<ChannelHandler> channelHandlers = Optional

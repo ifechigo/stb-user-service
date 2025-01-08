@@ -45,6 +45,7 @@ public class CashPointServiceImpl implements CashPointService {
                 .creatorReference(organization.getCreator().getReference())
                 .userReference(organization.getCreator().getReference()).userFullName(organization.getCreator().getLastName() +" "+organization.getCreator().getFirstName())
                 .businessReference(business.getReference()).businessName(business.getName())
+                .businessType(business.getBusinessType().name())
                 .cashPointReference(cashPoint.getReference())
                 .build());
 

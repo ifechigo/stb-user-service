@@ -14,6 +14,7 @@ public class TransactionUserRequestDto {
     private String userReference;
     private String userFullName;
     private String businessReference;
+    private String businessType;
     private String businessName;
     private String cashPointReference;
     private String walletReference;

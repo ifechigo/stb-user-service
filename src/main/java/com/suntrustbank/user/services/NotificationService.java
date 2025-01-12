@@ -1,11 +1,9 @@
 package com.suntrustbank.user.services;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suntrustbank.user.core.dtos.PublisherDetails;
 import com.suntrustbank.user.core.dtos.SmsRequest;
-import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

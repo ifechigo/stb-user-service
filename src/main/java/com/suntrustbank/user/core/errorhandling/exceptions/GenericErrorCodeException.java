@@ -43,6 +43,11 @@ public class GenericErrorCodeException extends RuntimeException {
             ErrorCode.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    public static GenericErrorCodeException serviceUnavailable() {
+        return new GenericErrorCodeException(ErrorCode.SERVICE_UNAVAILABLE.getDescription(),
+                ErrorCode.SERVICE_UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     public static GenericErrorCodeException unAuthorizedToken() {
         return new GenericErrorCodeException(ErrorCode.UN_AUTHENTICATED_TOKEN);
     }

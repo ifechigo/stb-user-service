@@ -105,8 +105,8 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public BaseResponse getBusiness(String userId) throws GenericErrorCodeException {
-        Organization organization = organizationRepository.findByCreator_Reference(userId)
+    public BaseResponse getBusiness(String userReference) throws GenericErrorCodeException {
+        Organization organization = organizationRepository.findByCreator_Reference(userReference)
                 .orElseThrow(() -> GenericErrorCodeException.notFound("user not found"));
 
         for (Business business : organization.getBusinesses()) {

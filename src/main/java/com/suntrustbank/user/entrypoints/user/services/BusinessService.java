@@ -8,6 +8,6 @@ import com.suntrustbank.user.entrypoints.user.dtos.BusinessUpdateRequestDto;
 public interface BusinessService {
     BaseResponse createBusinessProfile(BusinessRequestDto requestDto, String authorizationHeader) throws GenericErrorCodeException;
     BaseResponse updateBusinessProfile(BusinessUpdateRequestDto requestDto) throws GenericErrorCodeException;
-    BaseResponse getBusiness(String userId) throws GenericErrorCodeException;
+    BaseResponse getBusiness(String userReference) throws GenericErrorCodeException;
 
 }

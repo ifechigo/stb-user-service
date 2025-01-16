@@ -1,30 +1,20 @@
 package com.suntrustbank.user.entrypoints.organizationuser.repository;
 
+import com.suntrustbank.user.entrypoints.organizationuser.repository.enums.OrganizationRole;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.models.OrganizationUser;
+import com.suntrustbank.user.entrypoints.organizationuser.repository.specification.OrganizationUserSpecification;
+import com.suntrustbank.user.entrypoints.user.repository.enums.Status;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface OrganizationUserRepository extends JpaRepository<OrganizationUser, Long> {
     Optional<OrganizationUser> findByReference(String reference);
-
-//    @Transactional
-//    @Modifying
-//    @Query("""
-//        UPDATE organization_users ou
-//        SET ou.role = :role,
-//            ou.updated_at = :updatedAt
-//        WHERE ou.reference = :reference
-//        """)
-//    int updateRole( @Param("reference") String reference, @Param("role") Role role, @Param("updatedAt") Date updatedAt);
-//
-//    @Transactional
-//    @Modifying
-//    @Query("""
-//        UPDATE organization_users ou
-//        SET ou.status = :status,
-//            ou.updated_at = :updatedAt
-//        WHERE ou.reference = :reference
-//        """)
-//    int updateStatus( @Param("reference") String reference, @Param("status") Status status, @Param("updatedAt") Date updatedAt);
+    Optional<OrganizationUser> findByEmail(String email);
+    Page<OrganizationUser> findAll(Specification<OrganizationUser> organizationUserSpecification, Pageable pageable);
 }

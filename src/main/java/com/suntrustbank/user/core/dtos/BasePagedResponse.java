@@ -24,5 +24,8 @@ public class BasePagedResponse<T> {
     public static class PageData {
         private int page;
         private int size;
+        private int totalPages;
+        private int totalElements;
+        private int numberOfElements;
     }
 }

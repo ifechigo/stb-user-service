@@ -42,6 +42,8 @@ public class OrganizationUser {
     @Enumerated(EnumType.STRING)
     private OrganizationRole role;
 
+    private boolean isTeamLead;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;

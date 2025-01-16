@@ -30,6 +30,8 @@ public class Roles {
     @Enumerated(EnumType.STRING)
     private OrganizationRole name;
 
+    private boolean isTeamLead;
+
     private String description;
 
     @CreationTimestamp

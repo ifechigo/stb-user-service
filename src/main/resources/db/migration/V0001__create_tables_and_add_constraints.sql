@@ -110,6 +110,7 @@ BEGIN
         last_name NVARCHAR(50),
         email NVARCHAR(50) NOT NULL UNIQUE,
         role NVARCHAR(50) NOT NULL,
+        is_team_lead BIT NOT NULL DEFAULT 0,
         status NVARCHAR(50) NOT NULL,
         country_code NVARCHAR(5),
         phone_number NVARCHAR(15),
@@ -117,7 +118,13 @@ BEGIN
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
     );
+
+    -- Creating indexes
+    CREATE INDEX idx_organization_users_reference ON organization_users (reference);
     CREATE INDEX idx_organization_users_email ON organization_users (email);
+    CREATE INDEX idx_organization_users_role ON organization_users (role);
+    CREATE INDEX idx_organization_users_is_team_lead ON organization_users (is_team_lead);
+    CREATE INDEX idx_organization_users_status ON organization_users (status);
 END;
 
 -- Roles Table
@@ -125,8 +132,9 @@ IF OBJECT_ID('roles', 'U') IS NULL
 BEGIN
     CREATE TABLE roles (
         id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        reference NVARCHAR(40) DEFAULT REPLACE(CONVERT(VARCHAR(36), NEWID()), '-', '') NOT NULL UNIQUE,
-        name NVARCHAR(50) NOT NULL UNIQUE,
+        reference NVARCHAR(40) DEFAULT LOWER(REPLACE(CONVERT(VARCHAR(36), NEWID()), '-', '')) NOT NULL UNIQUE,
+        name NVARCHAR(50) NOT NULL,
+        is_team_lead BIT NOT NULL DEFAULT 0,
         description NVARCHAR(300) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE()
@@ -134,15 +142,21 @@ BEGIN
 
     CREATE INDEX idx_id ON roles (id);
     CREATE INDEX idx_reference ON roles (reference);
+    CREATE INDEX idx_is_team_lead ON roles (is_team_lead);
+    CREATE INDEX idx_name ON roles (name);
 
     SET IDENTITY_INSERT roles ON;
 
-    INSERT INTO roles (id, name, description)
+    -- Insert roles
+    INSERT INTO roles (id, name, is_team_lead, description)
     VALUES
-    (1, 'ADMIN', 'Responsible for managing and overseeing all administrative and operational aspects of the organization, including user management, system settings, and compliance.'),
-    (2, 'BUSINESS', 'Focuses on business strategy, partnerships, and market growth. This role oversees client relationships, product offerings, and the alignment of business goals with operational execution.'),
-    (3, 'FINANCE', 'Handles financial operations such as budgeting, accounting, transaction monitoring, and financial reporting. This role ensures regulatory compliance and the overall financial health of the organization.'),
-    (4, 'SUPPORT', 'Provides technical and customer support to ensure seamless user experiences. Responsible for resolving client issues, answering queries, and maintaining satisfaction across all platforms.');
+    (1, 'ADMIN', 0, 'Responsible for managing and overseeing all administrative and operational aspects of the organization, including user management, system settings, and compliance.'),
+    (2, 'BUSINESS', 0, 'Focuses on business strategy, partnerships, and market growth. This role oversees client relationships, product offerings, and the alignment of business goals with operational execution.'),
+    (3, 'BUSINESS', 1, 'Leads the business team, manages partnerships, oversees business strategies, and aligns goals with execution.'),
+    (4, 'FINANCE', 0, 'Handles financial operations such as budgeting, accounting, transaction monitoring, and financial reporting. This role ensures regulatory compliance and the overall financial health of the organization.'),
+    (5, 'FINANCE', 1, 'Leads the finance team, handles budgeting, transaction monitoring, and ensures financial compliance.'),
+    (6, 'SUPPORT', 0, 'Provides technical and customer support to ensure seamless user experiences. Responsible for resolving client issues, answering queries, and maintaining satisfaction across all platforms.'),
+    (7, 'SUPPORT', 1, 'Leads the support team, ensures seamless user experiences, resolves client issues, and maintains satisfaction.');
 
     SET IDENTITY_INSERT roles OFF;
 END;
@@ -168,11 +182,12 @@ END;
 -- - Try to ensure that names are concise and consistent.
 -- - Avoid overly generic terms; be as specific as possible.
 
+-- Permissions Table
 IF OBJECT_ID('permissions', 'U') IS NULL
 BEGIN
     CREATE TABLE permissions (
         id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        reference NVARCHAR(40) DEFAULT REPLACE(CONVERT(VARCHAR(36), NEWID()), '-', '') NOT NULL UNIQUE,
+        reference NVARCHAR(40) DEFAULT LOWER(REPLACE(CONVERT(VARCHAR(36), NEWID()), '-', '')) NOT NULL UNIQUE,
         name NVARCHAR(255) NOT NULL,
         category NVARCHAR(100) NOT NULL,
         description NVARCHAR(255),
@@ -226,11 +241,14 @@ BEGIN
     CREATE INDEX idx_role_permissions_permission_id ON role_permissions (permission_id);
 
     INSERT INTO role_permissions (role_id, permission_id)
-    VALUES --[role_id :: ADMIN=1,BUSINESS=2,FINANCE=3,SUPPORT=4]
+    VALUES --[role_id :: ADMIN=1,BUSINESS=2,LEAD_BUSINESS=3,FINANCE=4,LEAD_FINANCE=5,SUPPORT=6,LEAD_SUPPORT=7]
     (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),
     (2,6),(2,7),(2,10),(2,11),
-    (3,6),(3,7),(3,10),(3,11),(3,12),(3,13),(3,14),
-    (4,6), (4,7);
+    (3,6),(3,7),(3,10),(3,11),
+    (4,6),(4,7),(4,10),(4,11),(4,12),(4,13),(4,14),
+    (5,6),(5,7),(5,8),(5,9),(5,10),(5,11),(5,12),(5,13),(5,14),
+    (6,6), (6,7),
+    (7,6), (7,7), (7, 10), (7, 11);
 END;
 
 -- Account_Organization_Permissions Table creation and Table update
@@ -261,41 +279,48 @@ ON organization_users
 AFTER INSERT
 AS
 BEGIN
+    -- Insert permissions for the newly created user based on role and is_team_lead status
     INSERT INTO organization_user_permissions (permission_id, organization_user_id, enabled)
     SELECT
         rp.permission_id,
         i.id AS organization_user_id,
         1 AS enabled
     FROM inserted i
-    JOIN roles r ON i.role = r.name
+    -- Match the role and is_team_lead of the inserted user with the roles table
+    JOIN roles r ON i.role = r.name AND i.is_team_lead = r.is_team_lead
+    -- Join with role_permissions to get the correct permissions for the role
     JOIN role_permissions rp ON r.id = rp.role_id;
 END;
 GO
+
 -- Trigger for permission assignment on organization user role change
 CREATE TRIGGER trg_update_permissions_on_role_change
 ON organization_users
 AFTER UPDATE
 AS
 BEGIN
-    -- Ensure the trigger runs only when the `role` column is updated
-    IF UPDATE(role)
+    -- Ensure the trigger runs only when the role or is_team_lead columns are updated
+    IF UPDATE(role) OR UPDATE(is_team_lead)
     BEGIN
         -- Delete all permissions for the updated users
         DELETE FROM organization_user_permissions
         WHERE organization_user_id IN (SELECT id FROM inserted);
 
-        -- Assign new permissions based on the updated role
+        -- Assign new permissions based on the updated role and is_team_lead status
         INSERT INTO organization_user_permissions (permission_id, organization_user_id, enabled)
         SELECT
             rp.permission_id,
             i.id AS organization_user_id,
             1 AS enabled
         FROM inserted i
-        JOIN roles r ON i.role = r.name
+        -- Match the role and is_team_lead of the inserted user with the roles table
+        JOIN roles r ON i.role = r.name AND i.is_team_lead = r.is_team_lead
+        -- Join with role_permissions to get the correct permissions for the role
         JOIN role_permissions rp ON r.id = rp.role_id;
     END
 END;
 GO
+
 -- Trigger for email uniqueness between users and businesses
 CREATE TRIGGER trigger_user_business_email
 ON businesses

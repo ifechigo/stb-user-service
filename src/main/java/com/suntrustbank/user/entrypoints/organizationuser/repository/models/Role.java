@@ -1,6 +1,7 @@
 package com.suntrustbank.user.entrypoints.organizationuser.repository.models;
 
 import com.suntrustbank.user.entrypoints.organizationuser.repository.enums.OrganizationRole;
+import com.suntrustbank.user.entrypoints.organizationuser.repository.enums.OrganizationRoleType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +30,10 @@ public class Role {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrganizationRole name;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrganizationRoleType roleType;
 
     private boolean isTeamLead;
 

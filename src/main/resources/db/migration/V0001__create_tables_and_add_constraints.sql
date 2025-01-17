@@ -134,6 +134,7 @@ BEGIN
         id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         reference NVARCHAR(40) DEFAULT LOWER(REPLACE(CONVERT(VARCHAR(36), NEWID()), '-', '')) NOT NULL UNIQUE,
         name NVARCHAR(50) NOT NULL,
+        role_type NVARCHAR(50) NOT NULL,
         is_team_lead BIT NOT NULL DEFAULT 0,
         description NVARCHAR(300) NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
@@ -148,15 +149,15 @@ BEGIN
     SET IDENTITY_INSERT roles ON;
 
     -- Insert roles
-    INSERT INTO roles (id, name, is_team_lead, description)
+    INSERT INTO roles (id, name, role_type, is_team_lead, description)
     VALUES
-    (1, 'ADMIN', 0, 'Responsible for managing and overseeing all administrative and operational aspects of the organization, including user management, system settings, and compliance.'),
-    (2, 'BUSINESS', 0, 'Focuses on business strategy, partnerships, and market growth. This role oversees client relationships, product offerings, and the alignment of business goals with operational execution.'),
-    (3, 'BUSINESS', 1, 'Leads the business team, manages partnerships, oversees business strategies, and aligns goals with execution.'),
-    (4, 'FINANCE', 0, 'Handles financial operations such as budgeting, accounting, transaction monitoring, and financial reporting. This role ensures regulatory compliance and the overall financial health of the organization.'),
-    (5, 'FINANCE', 1, 'Leads the finance team, handles budgeting, transaction monitoring, and ensures financial compliance.'),
-    (6, 'SUPPORT', 0, 'Provides technical and customer support to ensure seamless user experiences. Responsible for resolving client issues, answering queries, and maintaining satisfaction across all platforms.'),
-    (7, 'SUPPORT', 1, 'Leads the support team, ensures seamless user experiences, resolves client issues, and maintains satisfaction.');
+    (1, 'ADMIN', 'ADMIN', 0, 'Responsible for managing and overseeing all administrative and operational aspects.'),
+    (2, 'BUSINESS', 'MEMBER', 0, 'Focuses on business strategy and partnerships.'),
+    (3, 'BUSINESS', 'TEAM_LEAD', 1, 'Leads the business team and aligns goals with execution.'),
+    (4, 'FINANCE', 'MEMBER', 0, 'Handles financial operations and regulatory compliance.'),
+    (5, 'FINANCE', 'TEAM_LEAD', 1, 'Leads the finance team and ensures financial health.'),
+    (6, 'SUPPORT', 'MEMBER', 0, 'Provides technical and customer support.'),
+    (7, 'SUPPORT', 'TEAM_LEAD', 1, 'Leads the support team and maintains client satisfaction.');
 
     SET IDENTITY_INSERT roles OFF;
 END;
@@ -168,9 +169,9 @@ END;
 -- This table is used to store all permissions in the system.
 
 -- NAMING CONVENTION:
--- Format: 'Company Acronym:Service:Category:Action'
+-- Format: 'Company Acronym:Service(Operation):Category:Action'
 -- - Company Acronym: A short code for the company or system (e.g., 'stb' for Super Tech Bank).
--- - Service: The specific service area (e.g., 'transaction').
+-- - Service(Operation): The specific service area or the specific operation in a service that been undertaken (e.g., 'transaction', terminal).
 -- - Category: The type of operation or group (e.g., 'withdrawal').
 -- - Action: The CRUD action or specific operation (e.g., 'read_transactions').
 
@@ -202,23 +203,40 @@ BEGIN
 
     INSERT INTO permissions (id, category, name)
     VALUES
-    (1, 'ORGANIZATION_ACCOUNT_MANAGEMENT', 'stb:account:organization_account_management:read_admins'),
-    (2, 'ORGANIZATION_ACCOUNT_MANAGEMENT', 'stb:account:organization_account_management:read_admin'),
-    (3, 'ORGANIZATION_ACCOUNT_MANAGEMENT', 'stb:account:organization_account_management:create_admin'),
-    (4, 'ORGANIZATION_ACCOUNT_MANAGEMENT', 'stb:account:organization_account_management:update_admin'),
-    (5, 'ORGANIZATION_ACCOUNT_MANAGEMENT', 'stb:account:organization_account_management:delete_admin'),
+    (1, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:read'),
+    (2, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:create'),
+    (3, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:update'),
+    (4, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:delete'),
 
-    (6, 'ORGANIZATION_CUSTOMER_MANAGEMENT', 'stb:account:organization_customer_management:read_customers'),
-    (7, 'ORGANIZATION_CUSTOMER_MANAGEMENT', 'stb:account:organization_customer_management:read_customer'),
-    (8, 'ORGANIZATION_CUSTOMER_MANAGEMENT', 'stb:account:organization_customer_management:update_customer'),
-    (9, 'ORGANIZATION_CUSTOMER_MANAGEMENT', 'stb:account:organization_customer_management:delete_customer'),
+    (5, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:read'),
+    (6, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:create'),
+    (7, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:update'),
+    (8, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:delete'),
 
-    (10, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read_wallets'),
-    (11, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read_wallet'),
-    (12, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read_wallet_credits'),
-    (13, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read_wallet_debits'),
-    (14, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read_wallet_balance');
+    (9, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read'),
+    (10, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:create'),
+    (11, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:update'),
+    (12, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:delete'),
 
+    (13, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:read'),
+    (14, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:create'),
+    (15, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:update'),
+    (16, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:delete'),
+
+    (17, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:read'),
+    (18, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:create'),
+    (19, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:update'),
+    (20, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:delete'),
+
+    (21, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:read'),
+    (22, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:create'),
+    (23, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:update'),
+    (24, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:delete'),
+
+    (25, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:read'),
+    (26, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:create'),
+    (27, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:update'),
+    (28, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:delete');
 
     SET IDENTITY_INSERT permissions OFF;
 END;
@@ -242,13 +260,21 @@ BEGIN
 
     INSERT INTO role_permissions (role_id, permission_id)
     VALUES --[role_id :: ADMIN=1,BUSINESS=2,LEAD_BUSINESS=3,FINANCE=4,LEAD_FINANCE=5,SUPPORT=6,LEAD_SUPPORT=7]
-    (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),
-    (2,6),(2,7),(2,10),(2,11),
-    (3,6),(3,7),(3,10),(3,11),
-    (4,6),(4,7),(4,10),(4,11),(4,12),(4,13),(4,14),
-    (5,6),(5,7),(5,8),(5,9),(5,10),(5,11),(5,12),(5,13),(5,14),
-    (6,6), (6,7),
-    (7,6), (7,7), (7, 10), (7, 11);
+        -- ADMIN: Full access to all permissions
+        (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,16),(1,17),(1,18),(1,19),(1,20),
+        (1,21),(1,22),(1,23),(1,24),(1,25),(1,26),(1,27),(1,28),
+        -- BUSINESS: Access to customer and transaction-related permissions
+        (2,5),(2,6),(2,7),(2,8),(2,13),(2,14),(2,17),(2,18),
+        -- LEAD_BUSINESS: Extended access for business management
+        (3,5),(3,6),(3,7),(3,8),(3,9),(3,10),(3,13),(3,14),(3,15),(3,16),(3,17),(3,18),(3,19),(3,20),
+        -- FINANCE: Access to wallet and transaction permissions
+        (4,9),(4,10),(4,11),(4,12),(4,13),(4,14),(4,15),(4,16),(4,17),(4,18),(4,19),(4,20),
+        -- LEAD_FINANCE: Extended access for financial management
+        (5,9),(5,10),(5,11),(5,12),(5,13),(5,14),(5,15),(5,16),(5,17),(5,18),(5,19),(5,20),(5,21),(5,22),(5,23),(5,24),
+        -- SUPPORT: Can read wallets, transactions, and terminals; no creation or modification
+        (6,9),(6,13),(6,17),(6,21),(6,25),(6,26),(6,27),(6,28),
+        -- LEAD_SUPPORT: Extended support management with read access to wallets, transactions, and terminals
+        (7,9),(7,10),(7,13),(7,14),(7,17),(7,18),(7,21),(7,25),(7,26),(7,27),(7,28);
 END;
 
 -- Account_Organization_Permissions Table creation and Table update

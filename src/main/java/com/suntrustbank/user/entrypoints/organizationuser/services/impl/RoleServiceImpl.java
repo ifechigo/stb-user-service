@@ -26,7 +26,7 @@ public class RoleServiceImpl implements RoleService {
                     RoleDto dto = new RoleDto();
                     dto.setReference(role.getReference());
                     dto.setName(role.getName().name());
-                    dto.setTeamLead(role.isTeamLead());
+                    dto.setRoleType(role.getRoleType().name());
                     dto.setDescription(role.getDescription());
                     return dto;
                 })

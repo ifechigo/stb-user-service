@@ -1,7 +1,6 @@
 package com.suntrustbank.user.entrypoints.organizationuser.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.suntrustbank.user.entrypoints.organizationuser.repository.enums.OrganizationRole;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +10,6 @@ import lombok.Setter;
 public class RoleDto {
     private String reference;
     private String name;
-    private boolean isTeamLead;
+    private String roleType;
     private String description;
 }

@@ -3,9 +3,8 @@ package com.suntrustbank.user.entrypoints.organizationuser.repository.enums;
 import lombok.Getter;
 
 @Getter
-public enum OrganizationRole {
+public enum OrganizationRoleType {
     ADMIN,
-    BUSINESS,
-    FINANCE,
-    SUPPORT;
+    MEMBER,
+    TEAM_LEAD
 }

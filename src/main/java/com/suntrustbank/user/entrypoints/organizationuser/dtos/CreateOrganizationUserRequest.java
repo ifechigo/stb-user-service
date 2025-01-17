@@ -18,8 +18,8 @@ public class CreateOrganizationUserRequest {
     @NotBlank(message = "email field is required")
     private String email;
 
-    @NotBlank(message = "role field is required")
-    private String role;
+    @NotBlank(message = "roleReference field is required")
+    private String roleReference;
 
     private String password;
 

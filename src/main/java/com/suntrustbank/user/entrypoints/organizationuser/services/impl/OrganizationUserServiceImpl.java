@@ -12,11 +12,12 @@ import com.suntrustbank.user.entrypoints.organizationuser.dtos.*;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.OrganizationUserRepository;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.enums.OrganizationRole;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.models.OrganizationUser;
+import com.suntrustbank.user.entrypoints.organizationuser.repository.models.Role;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.specification.OrganizationUserSpecification;
 import com.suntrustbank.user.entrypoints.organizationuser.services.OrganizationUserPermissionService;
 import com.suntrustbank.user.entrypoints.organizationuser.services.OrganizationUserService;
 import com.suntrustbank.user.entrypoints.organizationuser.services.PermissionService;
-import com.suntrustbank.user.entrypoints.user.dtos.BusinessResponseDto;
+import com.suntrustbank.user.entrypoints.organizationuser.services.RoleService;
 import com.suntrustbank.user.entrypoints.user.repository.enums.Status;
 import com.suntrustbank.user.services.dtos.AuthOrganizationRequestDto;
 import com.suntrustbank.user.services.dtos.AuthResponseDto;
@@ -32,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -41,6 +41,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
 
     private final OrganizationUserRepository organizationUserRepository;
     private final PermissionService permissionService;
+    private final RoleService roleService;
     private final OrganizationUserPermissionService organizationUserPermissionService;
     private final WebClientService<AuthOrganizationRequestDto, AuthResponseDto> authOrganizationWebClientService;
 
@@ -51,19 +52,25 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
             throw GenericErrorCodeException.badRequest("organization user with email '" +request.getEmail()+"' already exists");
         }
 
-        OrganizationRole organizationRole;
+        Role role = roleService.get(request.getRoleReference()).orElseThrow(() -> {
+            throw GenericErrorCodeException.badRequest("role with reference "+request.getRoleReference()+" doesn't exist");
+        });
+
         OrganizationUser organizationUser;
         try {
-            organizationRole = OrganizationRole.valueOf(request.getRole());
 
             organizationUser = new OrganizationUser();
             BeanUtils.copyProperties(request, organizationUser);
             organizationUser.setReference(UUIDGenerator.generate());
-            organizationUser.setRole(organizationRole);
-            organizationUser.setProfilePhoto(request.getImageBase64());
+            organizationUser.setRole(role.getName());
+            organizationUser.setTeamLead(role.isTeamLead());
             organizationUser.setStatus(Status.ACTIVE);
             if (StringUtils.isNotBlank(request.getImageBase64())) {
                 organizationUser.setProfilePhoto(request.getImageBase64());
+            }
+            if (StringUtils.isBlank(request.getCountryCode()) || StringUtils.isBlank(request.getPhoneNumber())) {
+                organizationUser.setCountryCode(null);
+                organizationUser.setPhoneNumber(null);
             }
 
             organizationUserRepository.save(organizationUser);
@@ -77,13 +84,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         } catch (AuthWebClientException e) {
             throw e;
         } catch (Exception e) {
-            throw GenericErrorCodeException.badRequest("invalid role parsed");
+            throw GenericErrorCodeException.badRequest("an error occurred while creating organization user");
         }
 
-        return BaseResponse.success(
-            OrganizationUserDto.builder().reference(organizationUser.getReference()).email(request.getEmail()).firstName(request.getFirstName()).lastName(request.getLastName())
-            .role(organizationRole.name()).countryCode(request.getCountryCode()).phoneNumber(request.getPhoneNumber()).build(),
-        BaseResponseMessage.SUCCESSFUL);
+        return BaseResponse.success(OrganizationUserDto.toDto(organizationUser), BaseResponseMessage.SUCCESSFUL);
     }
 
     public BasePagedResponse getOrganizationUsers(String email, String firstName, String lastName, OrganizationRole role, Boolean isTeamLead, Status status, int size, int page) throws GenericErrorCodeException {
@@ -91,10 +95,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         Page<OrganizationUser> organizationUserPage = organizationUserRepository.findAll(OrganizationUserSpecification.filterBy(email, firstName, lastName, role, isTeamLead, status), pageable);
 
         return BasePagedResponse.builder()
-            .data(organizationUserPage.getContent().stream().map(organizationUser -> OrganizationUserDto.builder().email(organizationUser.getEmail())
-                .firstName(organizationUser.getFirstName()).reference(organizationUser.getReference()).lastName(organizationUser.getLastName())
-                .role(organizationUser.getRole().name()).countryCode(organizationUser.getCountryCode()).phoneNumber(organizationUser.getPhoneNumber())
-                .isTeamLead(organizationUser.isTeamLead()).build()).toList())
+            .data(organizationUserPage.getContent().stream().map(OrganizationUserDto::toDto).toList())
             .page(BasePagedResponse.PageData.builder()
                 .page(organizationUserPage.getNumber()).size(organizationUserPage.getSize())
                 .numberOfElements(organizationUserPage.getNumberOfElements()).totalElements((int) organizationUserPage.getTotalElements())
@@ -105,11 +106,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public BaseResponse getOrganizationUser(String organizationUserReference) throws GenericErrorCodeException {
         OrganizationUser existingOrgUser = getOrganizationUserByReference(organizationUserReference);
 
-        return BaseResponse.success(
-            OrganizationUserDto.builder().email(existingOrgUser.getEmail()).firstName(existingOrgUser.getFirstName()).lastName(existingOrgUser.getLastName())
-                .role(existingOrgUser.getRole().name()).countryCode(existingOrgUser.getCountryCode()).phoneNumber(existingOrgUser.getPhoneNumber())
-                .isTeamLead(existingOrgUser.isTeamLead()).build(),
-            BaseResponseMessage.SUCCESSFUL);
+        return BaseResponse.success(OrganizationUserDto.toDto(existingOrgUser), BaseResponseMessage.SUCCESSFUL);
     }
 
     public BaseResponse reassignRole(RoleReassignmentRequest request) throws GenericErrorCodeException {
@@ -179,6 +176,10 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         return BaseResponse.success(null, BaseResponseMessage.SUCCESSFUL);
     }
 
+    public BaseResponse getRoles() throws GenericErrorCodeException {
+        return BaseResponse.success(roleService.get(), BaseResponseMessage.SUCCESSFUL);
+    }
+
     public BaseResponse getPermissions() throws GenericErrorCodeException {
         return BaseResponse.success(permissionService.get(), BaseResponseMessage.SUCCESSFUL);
     }
@@ -186,10 +187,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
     public BaseResponse getUserPermissions(String organizationUserReference) throws GenericErrorCodeException {
         OrganizationUser organizationUser = getOrganizationUserByReference(organizationUserReference);
 
-        OrganizationUserDto organizationUserDto = OrganizationUserDto.builder().reference(organizationUser.getReference()).email(organizationUser.getEmail())
-            .firstName(organizationUser.getFirstName()).lastName(organizationUser.getLastName()).role(organizationUser.getRole().name())
-            .isTeamLead(organizationUser.isTeamLead()).countryCode(organizationUser.getCountryCode()).phoneNumber(organizationUser.getPhoneNumber()).build();
-
+        OrganizationUserDto organizationUserDto = OrganizationUserDto.toDto(organizationUser);
         organizationUserDto.setPermissions(organizationUserPermissionService.get(organizationUserReference));
 
         return BaseResponse.success(organizationUserDto, BaseResponseMessage.SUCCESSFUL);

@@ -63,6 +63,11 @@ public class OrganizationUserController {
         return organizationUserService.updateStatus(requestDto);
     }
 
+    @GetMapping("/roles")
+    public BaseResponse handleFetchingRoles() throws GenericErrorCodeException {
+        return organizationUserService.getRoles();
+    }
+
     @GetMapping("/permissions")
     public BaseResponse handleFetchingPermissions() throws GenericErrorCodeException {
         return organizationUserService.getPermissions();

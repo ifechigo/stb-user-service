@@ -15,6 +15,7 @@ public interface OrganizationUserService {
     BaseResponse addLeadStatus(OrganizationUserRequest request) throws GenericErrorCodeException;
     BaseResponse removeLeadStatus(OrganizationUserRequest request) throws GenericErrorCodeException;
     BaseResponse updateStatus(UpdateStatusRequest request) throws GenericErrorCodeException;
+    BaseResponse getRoles() throws GenericErrorCodeException;
     BaseResponse getPermissions() throws GenericErrorCodeException;
     BaseResponse getUserPermissions(String organizationUserReference) throws GenericErrorCodeException;
     BaseResponse addPermission(PermissionRequest request) throws GenericErrorCodeException;

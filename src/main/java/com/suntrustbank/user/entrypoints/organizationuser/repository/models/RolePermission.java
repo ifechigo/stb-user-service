@@ -23,7 +23,7 @@ public class RolePermission {
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    private Role role;
 
     @ManyToOne
     @JoinColumn(name = "permission_id", nullable = false)

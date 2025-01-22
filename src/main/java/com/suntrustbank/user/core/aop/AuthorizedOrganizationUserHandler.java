@@ -62,7 +62,9 @@ public class AuthorizedOrganizationUserHandler {
             throw new GenericErrorCodeException("Unauthorized - Contact Admin", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
         }
 
-        if (!hasClaim(organizationUserDto.getPermissions(), authorizedOrganizationUser.hasAuthority())) {
+        String fullAuthority = String.format("%s:%s:%s", Constants.COMPANY_NAME, Constants.ACCOUNT_SERVICE, authorizedOrganizationUser.hasAuthority());
+
+        if (!hasClaim(organizationUserDto.getPermissions(), fullAuthority)) {
             log.debug("=== No permission '{}'. Member with email '{}' and role '{}' isn't authorized to access this endpoint",
                 authorizedOrganizationUser.hasAuthority(), authUserEmail, organizationUserDto.getRole());
             throw new GenericErrorCodeException("You are not authorized to perform this action", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);

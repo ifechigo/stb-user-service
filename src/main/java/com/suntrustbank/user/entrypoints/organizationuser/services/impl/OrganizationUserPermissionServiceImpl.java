@@ -1,6 +1,7 @@
 package com.suntrustbank.user.entrypoints.organizationuser.services.impl;
 
 import com.suntrustbank.user.core.errorhandling.exceptions.GenericErrorCodeException;
+import com.suntrustbank.user.entrypoints.organizationuser.dtos.OrganizationUserDto;
 import com.suntrustbank.user.entrypoints.organizationuser.dtos.PermissionDto;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.OrganizationUserPermissionRepository;
 import com.suntrustbank.user.entrypoints.organizationuser.repository.models.OrganizationUser;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,7 +25,7 @@ public class OrganizationUserPermissionServiceImpl implements OrganizationUserPe
 
     private final OrganizationUserPermissionRepository organizationUserPermissionRepository;
 
-    public List<PermissionDto> get(String organizationUserReference) throws GenericErrorCodeException {
+    public List<PermissionDto> getByReference(String organizationUserReference) throws GenericErrorCodeException {
         List<OrganizationUserPermission> permissionList = organizationUserPermissionRepository.findAllByOrganizationUser_Reference(organizationUserReference);
         return permissionList.stream()
                 .map(organizationUserPermission -> {
@@ -33,6 +35,25 @@ public class OrganizationUserPermissionServiceImpl implements OrganizationUserPe
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public Optional<OrganizationUserDto> getByEmail(String email) throws GenericErrorCodeException {
+        List<OrganizationUserPermission> permissionList = organizationUserPermissionRepository.findAllByOrganizationUser_Email(email);
+
+        if (permissionList.isEmpty()) {
+            return Optional.empty();
+        }
+
+        OrganizationUserDto organizationUserDto = OrganizationUserDto.toDto(permissionList.getFirst().getOrganizationUser());
+        organizationUserDto.setPermissions(permissionList.stream()
+            .map(organizationUserPermission -> {
+                PermissionDto dto = new PermissionDto();
+                dto.setName(organizationUserPermission.getPermission().getName());
+                return dto;
+            })
+            .collect(Collectors.toList()));
+
+        return Optional.of(organizationUserDto);
     }
 
     @Override

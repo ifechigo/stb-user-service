@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
+import static com.suntrustbank.user.core.utils.Constants.USER_NAME;
 
 @Slf4j
 @RestController
@@ -21,7 +21,6 @@ import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
 public class UserController {
 
     private final UserService userService;
-    private final JwtUtil jwtService;
 
     @PostMapping("/signup")
     public BaseResponse validatePhone(@RequestBody @Validated SignUpRequest phoneNumber) throws GenericErrorCodeException {
@@ -35,7 +34,7 @@ public class UserController {
 
     @PutMapping("/update")
     public BaseResponse updateUserAccount(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
-        var userId = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userId = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);
         return userService.updateUser(requestDto);
     }

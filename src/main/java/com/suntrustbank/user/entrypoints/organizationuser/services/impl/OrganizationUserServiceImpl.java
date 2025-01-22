@@ -188,7 +188,7 @@ public class OrganizationUserServiceImpl implements OrganizationUserService {
         OrganizationUser organizationUser = getOrganizationUserByReference(organizationUserReference);
 
         OrganizationUserDto organizationUserDto = OrganizationUserDto.toDto(organizationUser);
-        organizationUserDto.setPermissions(organizationUserPermissionService.get(organizationUserReference));
+        organizationUserDto.setPermissions(organizationUserPermissionService.getByReference(organizationUserReference));
 
         return BaseResponse.success(organizationUserDto, BaseResponseMessage.SUCCESSFUL);
     }

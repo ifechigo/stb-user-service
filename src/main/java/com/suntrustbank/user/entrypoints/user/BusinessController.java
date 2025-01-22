@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
+import static com.suntrustbank.user.core.utils.Constants.USER_NAME;
 
 @Slf4j
 @RestController
@@ -20,12 +20,11 @@ import static com.suntrustbank.user.core.utils.jwt.JwtUtil.USER_NAME;
 public class BusinessController {
 
     private final BusinessService businessService;
-    private final JwtUtil jwtService;
 
 
     @PostMapping
     public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated BusinessRequestDto requestDto) throws  GenericErrorCodeException {
-        var userReference = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserReference(userReference);
         return businessService.createBusinessProfile(requestDto, authorizationHeader);
     }
@@ -33,7 +32,7 @@ public class BusinessController {
     @PutMapping("/{businessReference}/update")
     public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String businessReference,
         @RequestBody @Validated BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
-        var userReference = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserReference(userReference);
         requestDto.setBusinessReference(businessReference);
         return businessService.updateBusinessProfile(requestDto);
@@ -41,7 +40,7 @@ public class BusinessController {
 
     @GetMapping
     public BaseResponse getUserBusiness(@RequestHeader("Authorization") String authorizationHeader) throws  GenericErrorCodeException {
-        var userReference = (String) jwtService.extractAllClaims(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         return businessService.getBusiness(userReference);
     }
 }

@@ -19,6 +19,7 @@ public class OrganizationUserDto {
     private String email;
     private String role;
     private boolean isTeamLead;
+    private String status;
     private String profilePictureBase64;
     private String countryCode;
     private String phoneNumber;
@@ -29,6 +30,7 @@ public class OrganizationUserDto {
             .reference(organizationUser.getReference()).email(organizationUser.getEmail())
             .firstName(organizationUser.getFirstName()).lastName(organizationUser.getLastName())
             .role(organizationUser.getRole().name()).isTeamLead(organizationUser.isTeamLead())
+            .status(organizationUser.getStatus().name())
             .countryCode(organizationUser.getCountryCode()).phoneNumber(organizationUser.getPhoneNumber())
             .profilePictureBase64(organizationUser.getProfilePhoto()).build();
     }

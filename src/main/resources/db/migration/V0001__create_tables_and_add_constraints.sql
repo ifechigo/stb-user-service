@@ -203,40 +203,46 @@ BEGIN
 
     INSERT INTO permissions (id, category, name)
     VALUES
-    (1, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:read'),
-    (2, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:create'),
-    (3, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:update'),
-    (4, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:delete'),
+    (1, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:create_admin'),
+    (2, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:read_admin'),
+    (3, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:update_admin_status'),
+    (4, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:update_admin_role'),
+    (5, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:read_permissions'),
+    (6, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:update_admin_permission'),
+    (7, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:read_admin_permission'),
+    (8, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:delete_admin_permission'),
+    (9, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:create_team_lead'),
+    (10, 'ADMIN_MANAGEMENT', 'stb:account:admin_management:delete_team_lead'),
 
-    (5, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:read'),
-    (6, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:create'),
-    (7, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:update'),
-    (8, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:delete'),
+    (11, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:read'),
+    (12, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:create'),
+    (13, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:update'),
+    (14, 'CUSTOMER_MANAGEMENT', 'stb:account:customer_management:delete'),
 
-    (9, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read'),
-    (10, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:create'),
-    (11, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:update'),
-    (12, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:delete'),
+    (15, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:read'),
+    (16, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:create'),
+    (17, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:update'),
+    (18, 'CUSTOMER_WALLET_MANAGEMENT', 'stb:wallet:customer_wallet_management:delete'),
 
-    (13, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:read'),
-    (14, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:create'),
-    (15, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:update'),
-    (16, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:delete'),
+    (19, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:read'),
+    (20, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:create'),
+    (21, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:update'),
+    (22, 'WITHDRAWAL_TRANSACTION_MANAGEMENT', 'stb:transaction:withdrawal_transaction_management:delete'),
 
-    (17, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:read'),
-    (18, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:create'),
-    (19, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:update'),
-    (20, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:delete'),
+    (23, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:read'),
+    (24, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:create'),
+    (25, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:update'),
+    (26, 'TRANSFER_TRANSACTION_MANAGEMENT', 'stb:transaction:transfer_transaction_management:delete'),
 
-    (21, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:read'),
-    (22, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:create'),
-    (23, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:update'),
-    (24, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:delete'),
+    (27, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:read'),
+    (28, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:create'),
+    (29, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:update'),
+    (30, 'TERMINAL_MANAGEMENT', 'stb:transaction:terminal_management:delete'),
 
-    (25, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:read'),
-    (26, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:create'),
-    (27, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:update'),
-    (28, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:delete');
+    (31, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:read'),
+    (32, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:create'),
+    (33, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:update'),
+    (34, 'TICKET_MANAGEMENT', 'stb:support:ticket_management:delete');
 
     SET IDENTITY_INSERT permissions OFF;
 END;
@@ -262,7 +268,7 @@ BEGIN
     VALUES --[role_id :: ADMIN=1,BUSINESS=2,LEAD_BUSINESS=3,FINANCE=4,LEAD_FINANCE=5,SUPPORT=6,LEAD_SUPPORT=7]
         -- ADMIN: Full access to all permissions
         (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,16),(1,17),(1,18),(1,19),(1,20),
-        (1,21),(1,22),(1,23),(1,24),(1,25),(1,26),(1,27),(1,28),
+        (1,21),(1,22),(1,23),(1,24),(1,25),(1,26),(1,27),(1,28),(1,29),(1,30),(1,31),(1,32),(1,33),(1,34),
         -- BUSINESS: Access to customer and transaction-related permissions
         (2,5),(2,6),(2,7),(2,8),(2,13),(2,14),(2,17),(2,18),
         -- LEAD_BUSINESS: Extended access for business management

@@ -447,3 +447,11 @@ BEGIN
     END;
 END;
 GO
+
+BEGIN
+    -- Create default admin user
+    INSERT INTO organization_users (reference, first_name, last_name, email, role, status)
+    VALUES
+    ('00000000000000000000', 'admin', 'admin', 'admin@gmail.com', 'ADMIN', 'ACTIVE');
+END;
+GO

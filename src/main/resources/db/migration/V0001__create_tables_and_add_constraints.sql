@@ -100,10 +100,10 @@ BEGIN
     CREATE INDEX idx_cash_points_is_main ON cash_points (is_main);
 END;
 
--- ADMIN/ORGANIZATION USERS Table (SunTrust's)
-IF OBJECT_ID('organization_users', 'U') IS NULL
+-- ADMIN USERS Table (SunTrust's)
+IF OBJECT_ID('admin_users', 'U') IS NULL
 BEGIN
-    CREATE TABLE organization_users (
+    CREATE TABLE admin_users (
         id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         reference NVARCHAR(50) NOT NULL UNIQUE,
         first_name NVARCHAR(50),
@@ -120,11 +120,11 @@ BEGIN
     );
 
     -- Creating indexes
-    CREATE INDEX idx_organization_users_reference ON organization_users (reference);
-    CREATE INDEX idx_organization_users_email ON organization_users (email);
-    CREATE INDEX idx_organization_users_role ON organization_users (role);
-    CREATE INDEX idx_organization_users_is_team_lead ON organization_users (is_team_lead);
-    CREATE INDEX idx_organization_users_status ON organization_users (status);
+    CREATE INDEX idx_admin_users_reference ON admin_users (reference);
+    CREATE INDEX idx_admin_users_email ON admin_users (email);
+    CREATE INDEX idx_admin_users_role ON admin_users (role);
+    CREATE INDEX idx_admin_users_is_team_lead ON admin_users (is_team_lead);
+    CREATE INDEX idx_admin_users_status ON admin_users (status);
 END;
 
 -- Roles Table
@@ -284,22 +284,22 @@ BEGIN
 END;
 
 -- Account_Organization_Permissions Table creation and Table update
-IF OBJECT_ID('organization_user_permissions', 'U') IS NULL
+IF OBJECT_ID('admin_user_permissions', 'U') IS NULL
 BEGIN
-    CREATE TABLE organization_user_permissions (
+    CREATE TABLE admin_user_permissions (
         id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         permission_id BIGINT NOT NULL,
-        organization_user_id BIGINT NOT NULL,
+        admin_user_id BIGINT NOT NULL,
         enabled BIT NOT NULL,
         created_at DATETIME DEFAULT GETDATE(),
         updated_at DATETIME DEFAULT GETDATE(),
         CONSTRAINT fk_role_permission_id FOREIGN KEY (permission_id) REFERENCES permissions (id) ON DELETE CASCADE,
-        CONSTRAINT fk_organization_user_id FOREIGN KEY (organization_user_id) REFERENCES organization_users (id) ON DELETE CASCADE,
-        CONSTRAINT uc_organization_user_permissions UNIQUE (organization_user_id, permission_id)
+        CONSTRAINT fk_admin_user_id FOREIGN KEY (admin_user_id) REFERENCES admin_users (id) ON DELETE CASCADE,
+        CONSTRAINT uc_admin_user_permissions UNIQUE (admin_user_id, permission_id)
     );
 
-    CREATE INDEX idx_organization_user_permissions_organization_user_id ON organization_user_permissions (organization_user_id);
-    CREATE INDEX idx_organization_user_permissions_permission_id ON organization_user_permissions (permission_id);
+    CREATE INDEX idx_admin_user_permissions_admin_user_id ON admin_user_permissions (admin_user_id);
+    CREATE INDEX idx_admin_user_permissions_permission_id ON admin_user_permissions (permission_id);
 END;
 
 -- Separate batch for triggers
@@ -307,15 +307,15 @@ GO
 
 -- Trigger for permission assignment on organization user creation
 CREATE TRIGGER trigger_assign_permissions_after_insert
-ON organization_users
+ON admin_users
 AFTER INSERT
 AS
 BEGIN
     -- Insert permissions for the newly created user based on role and is_team_lead status
-    INSERT INTO organization_user_permissions (permission_id, organization_user_id, enabled)
+    INSERT INTO admin_user_permissions (permission_id, admin_user_id, enabled)
     SELECT
         rp.permission_id,
-        i.id AS organization_user_id,
+        i.id AS admin_user_id,
         1 AS enabled
     FROM inserted i
     -- Match the role and is_team_lead of the inserted user with the roles table
@@ -327,7 +327,7 @@ GO
 
 -- Trigger for permission assignment on organization user role change
 CREATE TRIGGER trg_update_permissions_on_role_change
-ON organization_users
+ON admin_users
 AFTER UPDATE
 AS
 BEGIN
@@ -335,14 +335,14 @@ BEGIN
     IF UPDATE(role) OR UPDATE(is_team_lead)
     BEGIN
         -- Delete all permissions for the updated users
-        DELETE FROM organization_user_permissions
-        WHERE organization_user_id IN (SELECT id FROM inserted);
+        DELETE FROM admin_user_permissions
+        WHERE admin_user_id IN (SELECT id FROM inserted);
 
         -- Assign new permissions based on the updated role and is_team_lead status
-        INSERT INTO organization_user_permissions (permission_id, organization_user_id, enabled)
+        INSERT INTO admin_user_permissions (permission_id, admin_user_id, enabled)
         SELECT
             rp.permission_id,
-            i.id AS organization_user_id,
+            i.id AS admin_user_id,
             1 AS enabled
         FROM inserted i
         -- Match the role and is_team_lead of the inserted user with the roles table
@@ -450,7 +450,7 @@ GO
 
 BEGIN
     -- Create default admin user
-    INSERT INTO organization_users (reference, first_name, last_name, email, role, status)
+    INSERT INTO admin_users (reference, first_name, last_name, email, role, status)
     VALUES
     ('00000000000000000000', 'admin', 'admin', 'admin@gmail.com', 'ADMIN', 'ACTIVE');
 END;

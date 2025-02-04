@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micrometer.common.util.StringUtils;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +15,7 @@ public class BusinessUpdateRequestDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String userReference;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotBlank(message = "businessReference is required and cannot be empty")
     private String businessReference;
 
     @Email(message = "invalid email format")

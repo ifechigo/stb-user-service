@@ -27,12 +27,12 @@ public class UserController {
         return userService.signUp(phoneNumber);
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public BaseResponse createUserAccount(@RequestBody @Validated UserRequestDto requestDto) throws GenericErrorCodeException {
         return userService.createUser(requestDto);
     }
 
-    @PutMapping("/update")
+    @PutMapping
     public BaseResponse updateUserAccount(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
         var userId = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserId(userId);

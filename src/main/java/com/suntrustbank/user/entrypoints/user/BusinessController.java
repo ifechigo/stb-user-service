@@ -29,7 +29,7 @@ public class BusinessController {
         return businessService.createBusinessProfile(requestDto, authorizationHeader);
     }
 
-    @PutMapping("/{businessReference}/update")
+    @PutMapping
     public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String businessReference,
         @RequestBody @Validated BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
         var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);

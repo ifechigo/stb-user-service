@@ -23,7 +23,7 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
     @AuthorizedAdminUser(hasAuthority = "admin_management:create_admin")
-    @PostMapping("/create")
+    @PostMapping
     public BaseResponse createUserAccount(@RequestBody @Validated CreateAdminUserRequest requestDto) throws GenericErrorCodeException {
         return adminUserService.create(requestDto);
     }
@@ -73,15 +73,9 @@ public class AdminUserController {
         return adminUserService.getRoles();
     }
 
-    @AuthorizedAdminUser(hasAuthority = "admin_management:read_permissions")
-    @GetMapping("/permissions")
-    public BaseResponse handleFetchingPermissions() throws GenericErrorCodeException {
-        return adminUserService.getPermissions();
-    }
-
     @AuthorizedAdminUser(hasAuthority = "admin_management:read_admin_permissions")
-    @GetMapping("/{adminUserReference}/permissions")
-    public BaseResponse handleFetchingUserPermissions(@PathVariable String adminUserReference) throws GenericErrorCodeException {
+    @GetMapping("permissions")
+    public BaseResponse handleFetchingUserPermissions(@RequestParam(name = "adminUserReference") String adminUserReference) throws GenericErrorCodeException {
         return adminUserService.getAdminUserPermissions(adminUserReference);
     }
 

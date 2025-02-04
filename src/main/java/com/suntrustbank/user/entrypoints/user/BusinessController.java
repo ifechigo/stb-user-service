@@ -30,11 +30,10 @@ public class BusinessController {
     }
 
     @PutMapping
-    public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader, @PathVariable String businessReference,
+    public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader,
         @RequestBody @Validated BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
         var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
         requestDto.setUserReference(userReference);
-        requestDto.setBusinessReference(businessReference);
         return businessService.updateBusinessProfile(requestDto);
     }
 

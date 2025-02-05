@@ -45,7 +45,7 @@ public class AuthorizedAdminUserHandler {
 
         String authToken = httpServletRequest.getHeader(AUTH_HEADER);
         if (!JwtUtil.isValidBearerToken(authToken)) {
-            throw new GenericErrorCodeException(ErrorCode.UNAUTHORIZED);
+            throw GenericErrorCodeException.unauthenticated();
         }
 
         Object[] objects = joinPoint.getArgs();
@@ -54,12 +54,13 @@ public class AuthorizedAdminUserHandler {
 
         AdminUserDto adminUserDto = adminUserPermissionService.getByEmail(authUserEmail).orElseThrow(() -> {
             log.debug("=== User with email '{}' doesn't exist or have any permission", authUserEmail);
-            throw new GenericErrorCodeException(ErrorCode.UNAUTHORIZED);
+            throw GenericErrorCodeException.unauthenticated();
         });
 
         if (!Status.ACTIVE.equals(Status.valueOf(adminUserDto.getStatus()))) {
             log.debug("=== Member with email '{}' accessing this endpoint has been '{}'", authUserEmail, adminUserDto.getStatus());
-            throw new GenericErrorCodeException("Unauthorized - Contact Admin", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+//            throw new GenericErrorCodeException("Unauthorized - Contact Admin", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+            throw GenericErrorCodeException.unauthenticated();
         }
 
         String fullAuthority = String.format("%s:%s:%s", Constants.COMPANY_NAME, Constants.ACCOUNT_SERVICE, authorizedAdminUser.hasAuthority());
@@ -67,7 +68,8 @@ public class AuthorizedAdminUserHandler {
         if (!hasClaim(adminUserDto.getPermissions(), fullAuthority)) {
             log.debug("=== No permission '{}'. Member with email '{}' and role '{}' isn't authorized to access this endpoint",
                 authorizedAdminUser.hasAuthority(), authUserEmail, adminUserDto.getRole());
-            throw new GenericErrorCodeException("You are not authorized to perform this action", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+//            throw new GenericErrorCodeException("You are not authorized to perform this action", ErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+            throw GenericErrorCodeException.unauthenticated();
         }
     }
 

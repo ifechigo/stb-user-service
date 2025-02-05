@@ -4,10 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
-    UNAUTHORIZED("0002", "Full authentication is required to access this resource"),
+    UNAUTHORIZED("0002", "Unauthorized"),
     INTERNAL_SERVER_ERROR("0001", "An error occurred, try again!"),
     SERVICE_UNAVAILABLE("0000", "Service unavailable"),
-    UN_AUTHENTICATED_TOKEN("0003", "Unauthorized invalid token"),
     BAD_REQUEST("0001", "Internal server error");
 
     private final String code;

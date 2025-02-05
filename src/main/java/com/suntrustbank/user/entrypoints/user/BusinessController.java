@@ -24,7 +24,7 @@ public class BusinessController {
 
     @PostMapping
     public BaseResponse createBusiness(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated BusinessRequestDto requestDto) throws  GenericErrorCodeException {
-        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unauthenticated);
         requestDto.setUserReference(userReference);
         return businessService.createBusinessProfile(requestDto, authorizationHeader);
     }
@@ -32,14 +32,14 @@ public class BusinessController {
     @PutMapping
     public BaseResponse updateBusiness(@RequestHeader("Authorization") String authorizationHeader,
         @RequestBody @Validated BusinessUpdateRequestDto requestDto) throws  GenericErrorCodeException {
-        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unauthenticated);
         requestDto.setUserReference(userReference);
         return businessService.updateBusinessProfile(requestDto);
     }
 
     @GetMapping
     public BaseResponse getUserBusiness(@RequestHeader("Authorization") String authorizationHeader) throws  GenericErrorCodeException {
-        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userReference = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unauthenticated);
         return businessService.getBusiness(userReference);
     }
 }

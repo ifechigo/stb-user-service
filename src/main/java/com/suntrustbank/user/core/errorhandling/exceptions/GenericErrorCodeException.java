@@ -47,8 +47,4 @@ public class GenericErrorCodeException extends RuntimeException {
         return new GenericErrorCodeException(ErrorCode.SERVICE_UNAVAILABLE.getDescription(),
                 ErrorCode.SERVICE_UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
     }
-
-    public static GenericErrorCodeException unAuthorizedToken() {
-        return new GenericErrorCodeException(ErrorCode.UN_AUTHENTICATED_TOKEN);
-    }
 }

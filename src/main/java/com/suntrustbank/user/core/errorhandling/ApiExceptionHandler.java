@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -31,6 +32,12 @@ import java.util.List;
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String EXCEPTION_WAS_THROWN = "Exception was thrown:: ";
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<BaseErrorResponse> handleMissingHeaderException(MissingRequestHeaderException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(mapErrors(ErrorCode.UNAUTHORIZED));
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseErrorResponse> handleInternalServerError(Exception e) {

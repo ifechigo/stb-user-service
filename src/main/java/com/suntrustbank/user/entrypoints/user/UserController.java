@@ -34,7 +34,7 @@ public class UserController {
 
     @PutMapping
     public BaseResponse updateUserAccount(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Validated UserUpdateRequestDto requestDto) throws GenericErrorCodeException {
-        var userId = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unAuthorizedToken);
+        var userId = (String) JwtUtil.getClaim(authorizationHeader, USER_NAME).orElseThrow(GenericErrorCodeException::unauthenticated);
         requestDto.setUserId(userId);
         return userService.updateUser(requestDto);
     }
